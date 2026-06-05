@@ -10,7 +10,7 @@ import { CustomButton } from "@/src/components/buttons/CustomButton";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { onboardingSlides } from "@/src/data/travelData";
 import { useLocalization } from "@/src/hooks/useLocalization";
-import { replaceWith } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { radius, spacing } from "@/src/theme";
 import type { TranslationKey } from "@/src/localization";
 
@@ -21,11 +21,12 @@ type OnboardingScreenProps = {
 export default function OnboardingScreen({ initialIndex = 0 }: OnboardingScreenProps) {
   const [index, setIndex] = useState(initialIndex);
   const { t } = useLocalization();
+  const { replace } = useNavigation();
   const slide = onboardingSlides[index] ?? onboardingSlides[0];
   const isLast = index === onboardingSlides.length - 1;
 
   const completeOnboarding = () => {
-    replaceWith("/SignIn");
+    replace("SignIn");
   };
 
   const handleNext = () => {

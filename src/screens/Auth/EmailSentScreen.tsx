@@ -6,12 +6,13 @@ import { AppScreen } from "@/src/components/common/AppScreen";
 import { AppHeader } from "@/src/components/headers/AppHeader";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
-import { navigateTo } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { radius, spacing } from "@/src/theme";
 
 export default function EmailSentScreen() {
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { navigate } = useNavigation();
 
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
@@ -26,7 +27,7 @@ export default function EmailSentScreen() {
         </Text>
         <CustomButton
           title={t("signIn")}
-          onPress={() => navigateTo("/SignIn")}
+          onPress={() => navigate("SignIn")}
           style={styles.button}
         />
       </View>

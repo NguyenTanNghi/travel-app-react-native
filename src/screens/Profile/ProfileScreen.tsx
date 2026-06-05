@@ -1,0 +1,167 @@
+import React from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { AppScreen } from "@/src/components/common/AppScreen";
+import { IconButton } from "@/src/components/common/IconButton";
+import { AppHeader } from "@/src/components/headers/AppHeader";
+import { avatarImages } from "@/src/data/travelData";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
+import { useLocalization } from "@/src/hooks/useLocalization";
+import { useNavigation } from "@/src/navigation/NavigationContext";
+import { radius, spacing } from "@/src/theme";
+
+type ProfileMenuItem = {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress?: () => void;
+};
+
+export default function ProfileScreen() {
+  const { theme } = useAppTheme();
+  const { t } = useLocalization();
+  const { navigate } = useNavigation();
+
+  const menuItems: ProfileMenuItem[] = [
+    { icon: "person-outline", label: t("profile"), onPress: () => navigate("EditProfile") },
+    {
+      icon: "bookmark-outline",
+      label: t("bookmarked"),
+      onPress: () => navigate("FavoritePlaces"),
+    },
+    {
+      icon: "time-outline",
+      label: t("previousTrips"),
+      onPress: () => navigate("Schedule"),
+    },
+    { icon: "settings-outline", label: t("settings") },
+    { icon: "shield-checkmark-outline", label: t("verification"), onPress: () => navigate("Verification") },
+  ];
+
+  return (
+    <AppScreen scroll contentContainerStyle={styles.content}>
+      <AppHeader
+        title={t("profile")}
+        right={
+          <IconButton
+            name="create-outline"
+            accessibilityLabel="Edit profile"
+            color={theme.colors.primary}
+            onPress={() => navigate("EditProfile")}
+          />
+        }
+      />
+      <View style={styles.body}>
+        <View style={styles.profileBlock}>
+          <Image source={{ uri: avatarImages[0] }} style={styles.avatar} />
+          <Text style={[styles.name, { color: theme.colors.text }]}>Imane fh</Text>
+          <Text style={[styles.email, { color: theme.colors.textMuted }]}>
+            imanefh28@gmail.com
+          </Text>
+        </View>
+
+        <View style={[styles.statsCard, { backgroundColor: theme.colors.surfaceRaised }]}>
+          <View style={styles.stat}>
+            <Text style={[styles.statLabel, { color: theme.colors.text }]}>
+              {t("rewardPoints")}
+            </Text>
+            <Text style={[styles.statValue, { color: theme.colors.primary }]}>50</Text>
+          </View>
+          <View style={styles.stat}>
+            <Text style={[styles.statLabel, { color: theme.colors.text }]}>
+              {t("travelTrips")}
+            </Text>
+            <Text style={[styles.statValue, { color: theme.colors.primary }]}>40</Text>
+          </View>
+          <View style={styles.stat}>
+            <Text style={[styles.statLabel, { color: theme.colors.text }]}>
+              {t("bucketList")}
+            </Text>
+            <Text style={[styles.statValue, { color: theme.colors.primary }]}>200</Text>
+          </View>
+        </View>
+
+        <View style={[styles.menuCard, { backgroundColor: theme.colors.surfaceRaised }]}>
+          {menuItems.map((item) => (
+            <TouchableOpacity
+              key={item.label}
+              activeOpacity={0.8}
+              onPress={item.onPress}
+              style={styles.menuItem}
+            >
+              <Ionicons name={item.icon} size={18} color={theme.colors.icon} />
+              <Text style={[styles.menuLabel, { color: theme.colors.text }]}>
+                {item.label}
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color={theme.colors.icon} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    </AppScreen>
+  );
+}
+
+const styles = StyleSheet.create({
+  avatar: {
+    borderRadius: radius.pill,
+    height: 88,
+    width: 88,
+  },
+  body: {
+    paddingHorizontal: spacing.lg,
+  },
+  content: {
+    paddingBottom: 132,
+    paddingTop: spacing.sm,
+  },
+  email: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  menuCard: {
+    borderRadius: radius.lg,
+    paddingVertical: spacing.xs,
+  },
+  menuItem: {
+    alignItems: "center",
+    flexDirection: "row",
+    minHeight: 52,
+    paddingHorizontal: spacing.md,
+  },
+  menuLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "700",
+    marginLeft: spacing.sm,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: "800",
+    marginTop: spacing.sm,
+  },
+  profileBlock: {
+    alignItems: "center",
+    marginBottom: spacing.xl,
+    marginTop: spacing.md,
+  },
+  stat: {
+    alignItems: "center",
+    flex: 1,
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  statsCard: {
+    borderRadius: radius.lg,
+    flexDirection: "row",
+    marginBottom: spacing.xl,
+    padding: spacing.md,
+  },
+  statValue: {
+    fontSize: 14,
+    fontWeight: "900",
+    marginTop: spacing.xs,
+  },
+});

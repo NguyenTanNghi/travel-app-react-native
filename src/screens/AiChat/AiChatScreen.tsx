@@ -1,0 +1,368 @@
+import React, { useRef, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { AppScreen } from "@/src/components/common/AppScreen";
+import { AppHeader } from "@/src/components/headers/AppHeader";
+import { aiChatStarterMessages } from "@/src/data/travelData";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
+import { useLocalization } from "@/src/hooks/useLocalization";
+import { radius, spacing } from "@/src/theme";
+import type { AiChatMessage, LanguageCode } from "@/src/types";
+
+function getCurrentTime() {
+  const date = new Date();
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${hours}:${minutes}`;
+}
+
+function buildTravelReply(prompt: string, language: LanguageCode) {
+  const normalizedPrompt = prompt.toLowerCase();
+  const isVietnamese = language === "vi";
+
+  if (normalizedPrompt.includes("pack") || normalizedPrompt.includes("hành lý")) {
+    return isVietnamese
+      ? "Checklist nhanh: giấy tờ, sạc dự phòng, thuốc cá nhân, kem chống nắng, áo khoác nhẹ, giày đi bộ và một túi chống nước. Nếu đi biển, thêm đồ bơi và dép nhẹ."
+      : "Quick packing list: documents, power bank, personal medicine, sunscreen, a light jacket, walking shoes, and a waterproof pouch. For beach trips, add swimwear and sandals.";
+  }
+
+  if (
+    normalizedPrompt.includes("budget") ||
+    normalizedPrompt.includes("cheap") ||
+    normalizedPrompt.includes("tiết kiệm")
+  ) {
+    return isVietnamese
+      ? "Gợi ý chuyến tiết kiệm: chọn homestay trung tâm, đặt vé sớm, ưu tiên ăn địa phương, đi bộ hoặc dùng phương tiện công cộng. Với 3 ngày, hãy giữ lịch trình 2-3 điểm chính để không tốn chi phí di chuyển."
+      : "For a budget trip: book central homestays early, eat local, walk or use public transport, and keep the plan to 2-3 key spots over 3 days to avoid transport costs.";
+  }
+
+  if (
+    normalizedPrompt.includes("vietnam") ||
+    normalizedPrompt.includes("việt nam") ||
+    normalizedPrompt.includes("viet nam")
+  ) {
+    return isVietnamese
+      ? "Lịch trình Việt Nam 5 ngày: 2 ngày Hà Nội, 1 ngày Ninh Bình, 2 ngày Hạ Long. Nếu thích biển hơn, đổi Hạ Long thành Đà Nẵng - Hội An."
+      : "Vietnam 5-day idea: 2 days in Hanoi, 1 day in Ninh Binh, and 2 days in Ha Long Bay. If you prefer beaches, swap Ha Long for Da Nang and Hoi An.";
+  }
+
+  if (
+    normalizedPrompt.includes("beach") ||
+    normalizedPrompt.includes("island") ||
+    normalizedPrompt.includes("biển")
+  ) {
+    return isVietnamese
+      ? "Cuối tuần biển gọn nhẹ: ngày 1 check-in và ngắm hoàng hôn, ngày 2 tour đảo hoặc snorkeling, sáng ngày 3 cafe biển rồi về. Nên đặt khách sạn gần bãi chính để tiết kiệm thời gian."
+      : "Beach weekend plan: day 1 check in and watch sunset, day 2 island tour or snorkeling, day 3 seaside cafe before heading home. Stay near the main beach to save time.";
+  }
+
+  return isVietnamese
+    ? "Mình có thể giúp bạn lên lịch trình, ước tính ngân sách, chọn điểm đến hoặc chuẩn bị hành lý. Hãy cho mình biết số ngày đi, ngân sách và phong cách du lịch bạn thích."
+    : "I can help with itineraries, budget estimates, destination picks, and packing plans. Tell me your trip length, budget, and travel style.";
+}
+
+export default function AiChatScreen() {
+  const [draft, setDraft] = useState("");
+  const [isThinking, setThinking] = useState(false);
+  const [messages, setMessages] = useState<AiChatMessage[]>(aiChatStarterMessages);
+  const scrollRef = useRef<ScrollView>(null);
+  const { theme } = useAppTheme();
+  const { language, t } = useLocalization();
+
+  const quickPrompts = [
+    t("aiQuickBeach"),
+    t("aiQuickBudget"),
+    t("aiQuickPacking"),
+    t("aiQuickVietnam"),
+  ];
+
+  const sendPrompt = (prompt: string) => {
+    const trimmedPrompt = prompt.trim();
+
+    if (!trimmedPrompt || isThinking) {
+      return;
+    }
+
+    const time = getCurrentTime();
+    const userMessage: AiChatMessage = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      text: trimmedPrompt,
+      time,
+    };
+
+    setMessages((current) => [...current, userMessage]);
+    setDraft("");
+    setThinking(true);
+
+    setTimeout(() => {
+      const assistantMessage: AiChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: "assistant",
+        text: buildTravelReply(trimmedPrompt, language),
+        time: getCurrentTime(),
+      };
+
+      setMessages((current) => [...current, assistantMessage]);
+      setThinking(false);
+      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+    }, 650);
+  };
+
+  return (
+    <AppScreen edges={["top"]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboard}
+      >
+        <AppHeader
+          title={t("aiChat")}
+          showBack={false}
+          right={
+            <View style={[styles.aiIcon, { backgroundColor: theme.colors.primarySoft }]}>
+              <Ionicons name="sparkles" size={20} color={theme.colors.primary} />
+            </View>
+          }
+        />
+        <View style={styles.intro}>
+          <Text style={[styles.introTitle, { color: theme.colors.text }]}>
+            {t("aiTravelAssistant")}
+          </Text>
+          <Text style={[styles.introText, { color: theme.colors.textMuted }]}>
+            {t("aiChatSubtitle")}
+          </Text>
+        </View>
+
+        <ScrollView
+          ref={scrollRef}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.messages}
+          onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+        >
+          {messages.map((message) => {
+            const isUser = message.role === "user";
+
+            return (
+              <View
+                key={message.id}
+                style={[
+                  styles.messageRow,
+                  isUser ? styles.userRow : styles.assistantRow,
+                ]}
+              >
+                {!isUser ? (
+                  <View
+                    style={[
+                      styles.avatar,
+                      { backgroundColor: theme.colors.primarySoft },
+                    ]}
+                  >
+                    <Ionicons
+                      name="sparkles"
+                      size={16}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                ) : null}
+                <View
+                  style={[
+                    styles.bubble,
+                    {
+                      backgroundColor: isUser
+                        ? theme.colors.bubbleMine
+                        : theme.colors.bubbleOther,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.messageText, { color: theme.colors.text }]}>
+                    {message.text}
+                  </Text>
+                  <Text style={[styles.time, { color: theme.colors.textMuted }]}>
+                    {message.time}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+          {isThinking ? (
+            <Text style={[styles.thinking, { color: theme.colors.textMuted }]}>
+              {t("aiThinking")}...
+            </Text>
+          ) : null}
+        </ScrollView>
+
+        <View style={styles.quickPromptRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {quickPrompts.map((prompt) => (
+              <TouchableOpacity
+                key={prompt}
+                activeOpacity={0.8}
+                onPress={() => sendPrompt(prompt)}
+                style={[
+                  styles.quickPrompt,
+                  {
+                    backgroundColor: theme.colors.primarySoft,
+                    borderColor: theme.colors.primary,
+                  },
+                ]}
+              >
+                <Text style={[styles.quickPromptText, { color: theme.colors.primary }]}>
+                  {prompt}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={styles.composerArea}>
+          <View style={[styles.inputWrap, { backgroundColor: theme.colors.input }]}>
+            <TextInput
+              value={draft}
+              onChangeText={setDraft}
+              placeholder={t("askAiPlaceholder")}
+              placeholderTextColor={theme.colors.textMuted}
+              style={[styles.input, { color: theme.colors.text }]}
+              multiline
+            />
+          </View>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => sendPrompt(draft)}
+            style={[
+              styles.sendButton,
+              {
+                backgroundColor: theme.colors.primary,
+                opacity: draft.trim() ? 1 : 0.56,
+              },
+            ]}
+          >
+            <Ionicons name="send" size={18} color={theme.colors.white} />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </AppScreen>
+  );
+}
+
+const styles = StyleSheet.create({
+  aiIcon: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    height: 40,
+    justifyContent: "center",
+    width: 40,
+  },
+  assistantRow: {
+    justifyContent: "flex-start",
+  },
+  avatar: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    height: 32,
+    justifyContent: "center",
+    marginRight: spacing.sm,
+    width: 32,
+  },
+  bubble: {
+    borderRadius: radius.lg,
+    maxWidth: "78%",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  composerArea: {
+    alignItems: "flex-end",
+    flexDirection: "row",
+    marginBottom: 116,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    maxHeight: 92,
+    minHeight: 22,
+  },
+  inputWrap: {
+    borderRadius: radius.md,
+    flex: 1,
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  intro: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+  },
+  introText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: spacing.xs,
+  },
+  introTitle: {
+    fontSize: 22,
+    fontWeight: "900",
+  },
+  keyboard: {
+    flex: 1,
+  },
+  messageRow: {
+    alignItems: "flex-end",
+    flexDirection: "row",
+    marginBottom: spacing.md,
+  },
+  messageText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  messages: {
+    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
+  quickPrompt: {
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    marginRight: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  quickPromptRow: {
+    paddingLeft: spacing.lg,
+    paddingVertical: spacing.xs,
+  },
+  quickPromptText: {
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  sendButton: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    height: 48,
+    justifyContent: "center",
+    marginLeft: spacing.sm,
+    width: 48,
+  },
+  thinking: {
+    fontSize: 13,
+    fontWeight: "700",
+    marginBottom: spacing.md,
+  },
+  time: {
+    alignSelf: "flex-end",
+    fontSize: 10,
+    marginTop: spacing.xs,
+  },
+  userRow: {
+    justifyContent: "flex-end",
+  },
+});

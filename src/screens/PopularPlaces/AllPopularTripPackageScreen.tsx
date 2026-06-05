@@ -6,12 +6,13 @@ import { AppHeader } from "@/src/components/headers/AppHeader";
 import { SectionHeader } from "@/src/components/sections/SectionHeader";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { usePlaces } from "@/src/hooks/usePlaces";
-import { navigateToPlace } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 
 export default function AllPopularTripPackageScreen() {
   const { t } = useLocalization();
   const { tripPackages } = usePlaces();
+  const { navigate } = useNavigation();
 
   return (
     <AppScreen scroll contentContainerStyle={styles.content}>
@@ -22,7 +23,7 @@ export default function AllPopularTripPackageScreen() {
           <TripPackageCard
             key={item.id}
             tripPackage={item}
-            onPress={() => navigateToPlace(item.placeId)}
+            onPress={() => navigate("Details", { placeId: item.placeId })}
           />
         ))}
       </View>

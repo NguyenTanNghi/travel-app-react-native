@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppScreen } from "@/src/components/common/AppScreen";
-import { BottomTabBar } from "@/src/components/common/BottomTabBar";
 import { IconButton } from "@/src/components/common/IconButton";
 import { LanguageSwitcher } from "@/src/components/common/LanguageSwitcher";
 import { SearchBar } from "@/src/components/common/SearchBar";
@@ -15,7 +14,7 @@ import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { usePlaces } from "@/src/hooks/usePlaces";
-import { navigateTo, navigateToPlace } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 
 export default function HomeScreen() {
@@ -24,6 +23,7 @@ export default function HomeScreen() {
   const { t } = useLocalization();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { popularPlaces, tripPackages } = usePlaces();
+  const { navigate } = useNavigation();
 
   return (
     <AppScreen scroll contentContainerStyle={styles.content}>
@@ -38,7 +38,7 @@ export default function HomeScreen() {
         <IconButton
           name="notifications-outline"
           accessibilityLabel="Open notifications"
-          onPress={() => navigateTo("/Notification")}
+          onPress={() => navigate("Notification")}
         />
       </View>
 
@@ -64,7 +64,7 @@ export default function HomeScreen() {
         <SectionHeader
           title={t("bestDestination")}
           actionLabel={t("viewAll")}
-          onActionPress={() => navigateTo("/PopularPlaces")}
+          onActionPress={() => navigate("PopularPlaces")}
         />
         <ScrollView
           horizontal
@@ -78,7 +78,7 @@ export default function HomeScreen() {
               variant="featured"
               isFavorite={isFavorite(place.id)}
               onToggleFavorite={() => toggleFavorite(place.id)}
-              onPress={() => navigateToPlace(place.id)}
+              onPress={() => navigate("Details", { placeId: place.id })}
             />
           ))}
         </ScrollView>
@@ -88,20 +88,20 @@ export default function HomeScreen() {
         <SectionHeader
           title={t("popularPackages")}
           actionLabel={t("viewAll")}
-          onActionPress={() => navigateTo("/AllPopularTripPackage")}
+          onActionPress={() => navigate("AllPopularTripPackage")}
         />
         {tripPackages.slice(0, 2).map((item) => (
           <TripPackageCard
             key={item.id}
             tripPackage={item}
-            onPress={() => navigateToPlace(item.placeId)}
+            onPress={() => navigate("Details", { placeId: item.placeId })}
           />
         ))}
       </View>
 
       <TouchableOpacity
         activeOpacity={0.85}
-        onPress={() => navigateTo("/Search")}
+        onPress={() => navigate("Search")}
         style={[styles.searchShortcut, { backgroundColor: theme.colors.primarySoft }]}
       >
         <Ionicons name="search" size={20} color={theme.colors.primary} />
@@ -109,8 +109,6 @@ export default function HomeScreen() {
           {t("search")}
         </Text>
       </TouchableOpacity>
-
-      <BottomTabBar active="home" />
     </AppScreen>
   );
 }
@@ -122,7 +120,7 @@ const styles = StyleSheet.create({
     width: 44,
   },
   content: {
-    paddingBottom: 12,
+    paddingBottom: 132,
     paddingTop: spacing.sm,
   },
   greetingWrap: {

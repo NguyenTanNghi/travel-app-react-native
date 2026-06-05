@@ -8,7 +8,7 @@ import { SectionHeader } from "@/src/components/sections/SectionHeader";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { usePlaces } from "@/src/hooks/usePlaces";
-import { navigateToPlace } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 
 export default function PopularPlacesScreen() {
@@ -16,6 +16,7 @@ export default function PopularPlacesScreen() {
   const { t } = useLocalization();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { searchPlaces } = usePlaces();
+  const { navigate } = useNavigation();
   const places = searchPlaces(query);
 
   return (
@@ -37,7 +38,7 @@ export default function PopularPlacesScreen() {
                 place={place}
                 isFavorite={isFavorite(place.id)}
                 onToggleFavorite={() => toggleFavorite(place.id)}
-                onPress={() => navigateToPlace(place.id)}
+                onPress={() => navigate("Details", { placeId: place.id })}
               />
             </View>
           ))}

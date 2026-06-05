@@ -63,20 +63,9 @@ export type NotificationItem = {
   status: "recent" | "earlier" | "archived";
 };
 
-export type ChatPreview = {
+export type AiChatMessage = {
   id: string;
-  name: string;
-  avatar: string;
-  lastMessage: string;
-  time: string;
-  unreadCount?: number;
-  online?: boolean;
-};
-
-export type ChatMessage = {
-  id: string;
-  chatId: string;
   text: string;
   time: string;
-  fromMe: boolean;
+  role: "assistant" | "user";
 };

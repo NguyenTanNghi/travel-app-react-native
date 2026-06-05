@@ -7,7 +7,7 @@ import { PasswordInput } from "@/src/components/inputs/PasswordInput";
 import { AuthScreenShell } from "@/src/screens/Auth/AuthScreenShell";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
-import { navigateTo, replaceWith } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { radius, spacing } from "@/src/theme";
 
 export default function SignInScreen() {
@@ -15,6 +15,7 @@ export default function SignInScreen() {
   const [password, setPassword] = useState("travelapp");
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { navigate, replace } = useNavigation();
 
   return (
     <AuthScreenShell title={t("signInNow")} subtitle={t("pleaseSignIn")}>
@@ -35,7 +36,7 @@ export default function SignInScreen() {
       />
       <TouchableOpacity
         activeOpacity={0.75}
-        onPress={() => navigateTo("/ForgotPassword")}
+        onPress={() => navigate("ForgotPassword")}
         style={styles.forgotWrap}
       >
         <Text style={[styles.link, { color: theme.colors.primary }]}>
@@ -44,14 +45,14 @@ export default function SignInScreen() {
       </TouchableOpacity>
       <CustomButton
         title={t("signIn")}
-        onPress={() => replaceWith("/Home")}
+        onPress={() => replace("Home")}
         style={styles.submit}
       />
       <View style={styles.switchRow}>
         <Text style={[styles.muted, { color: theme.colors.textMuted }]}>
           {t("noAccount")}
         </Text>
-        <TouchableOpacity onPress={() => navigateTo("/SignUp")}>
+        <TouchableOpacity onPress={() => navigate("SignUp")}>
           <Text style={[styles.link, { color: theme.colors.primary }]}>
             {t("signUp")}
           </Text>

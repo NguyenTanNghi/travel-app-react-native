@@ -1,7 +1,6 @@
 import React from "react";
 import { Image, ImageBackground, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { AvatarStack } from "@/src/components/common/AvatarStack";
 import { IconButton } from "@/src/components/common/IconButton";
@@ -13,16 +12,17 @@ import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { usePlaces } from "@/src/hooks/usePlaces";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { formatCurrency } from "@/src/utils/format";
 import { radius, spacing } from "@/src/theme";
 
 export default function DetailsScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { currentRoute } = useNavigation();
   const { getPlaceById } = usePlaces();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const place = getPlaceById(id);
+  const place = getPlaceById(currentRoute.params?.placeId);
 
   return (
     <AppScreen scroll edges={["top"]} contentContainerStyle={styles.content}>

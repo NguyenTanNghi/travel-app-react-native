@@ -1,6 +1,5 @@
 import type {
-  ChatMessage,
-  ChatPreview,
+  AiChatMessage,
   NotificationItem,
   OnboardingSlide,
   Place,
@@ -311,60 +310,11 @@ export const notifications: NotificationItem[] = [
   },
 ];
 
-export const chatPreviews: ChatPreview[] = [
+export const aiChatStarterMessages: AiChatMessage[] = [
   {
-    id: "ahmed",
-    name: "Ahmed Anjims",
-    avatar: avatarImages[1],
-    lastMessage: "How was your day?",
-    time: "08:06",
-    online: true,
-  },
-  {
-    id: "alem",
-    name: "Alem Ieain",
-    avatar: avatarImages[2],
-    lastMessage: "Typing...",
-    time: "08:02",
-    unreadCount: 2,
-    online: false,
-  },
-];
-
-export const chatMessages: ChatMessage[] = [
-  {
-    id: "message-1",
-    chatId: "ahmed",
-    text: "Hello!",
-    time: "9:24",
-    fromMe: true,
-  },
-  {
-    id: "message-2",
-    chatId: "ahmed",
-    text: "Thank you very much for your traveling, we really like the apartments. We will stay here for another 5 days.",
-    time: "9:30",
-    fromMe: true,
-  },
-  {
-    id: "message-3",
-    chatId: "ahmed",
-    text: "I'm very glad you like it.",
-    time: "9:35",
-    fromMe: false,
-  },
-  {
-    id: "message-4",
-    chatId: "ahmed",
-    text: "We are arriving today at 01:45, will someone be at home?",
-    time: "9:35",
-    fromMe: false,
-  },
-  {
-    id: "message-5",
-    chatId: "ahmed",
-    text: "I will be at home",
-    time: "9:39",
-    fromMe: true,
+    id: "ai-welcome",
+    role: "assistant",
+    text: "Hi, I am your Travel Explorer AI. Ask me for trip ideas, budgets, packing tips, or a quick itinerary.",
+    time: "Now",
   },
 ];

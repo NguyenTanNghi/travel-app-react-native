@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
-import { router } from "expo-router";
 import { IconButton } from "@/src/components/common/IconButton";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 
@@ -23,16 +23,17 @@ export function AppHeader({
   transparent = false,
 }: AppHeaderProps) {
   const { theme } = useAppTheme();
+  const { canGoBack, goBack, replace } = useNavigation();
   const textColor = transparent ? theme.colors.white : theme.colors.text;
   const mutedColor = transparent ? "rgba(255,255,255,0.82)" : theme.colors.textMuted;
 
   const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
+    if (canGoBack) {
+      goBack();
       return;
     }
 
-    router.replace("/Home");
+    replace("Home");
   };
 
   return (

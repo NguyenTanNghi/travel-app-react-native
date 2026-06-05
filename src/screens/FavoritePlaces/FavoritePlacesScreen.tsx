@@ -7,12 +7,13 @@ import { AppHeader } from "@/src/components/headers/AppHeader";
 import { SectionHeader } from "@/src/components/sections/SectionHeader";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useLocalization } from "@/src/hooks/useLocalization";
-import { navigateToPlace } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 
 export default function FavoritePlacesScreen() {
   const { favoritePlaces, toggleFavorite } = useFavorites();
   const { t } = useLocalization();
+  const { navigate } = useNavigation();
 
   return (
     <AppScreen scroll contentContainerStyle={styles.content}>
@@ -32,7 +33,7 @@ export default function FavoritePlacesScreen() {
                 <FavoriteCard
                   place={place}
                   onRemove={() => toggleFavorite(place.id)}
-                  onPress={() => navigateToPlace(place.id)}
+                  onPress={() => navigate("Details", { placeId: place.id })}
                 />
               </View>
             ))}

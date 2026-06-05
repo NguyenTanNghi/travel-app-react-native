@@ -1,1 +1,1 @@
-export { default } from "@/src/screens/Onboarding/SplashScreen";
+export { default } from "@/src/navigation/AppNavigator";

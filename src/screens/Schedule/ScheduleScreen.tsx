@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { AppScreen } from "@/src/components/common/AppScreen";
-import { BottomTabBar } from "@/src/components/common/BottomTabBar";
 import { IconButton } from "@/src/components/common/IconButton";
 import { ScheduleCard } from "@/src/components/cards/ScheduleCard";
 import { AppHeader } from "@/src/components/headers/AppHeader";
@@ -9,11 +8,12 @@ import { CalendarStrip } from "@/src/components/sections/CalendarStrip";
 import { SectionHeader } from "@/src/components/sections/SectionHeader";
 import { scheduleItems } from "@/src/data/travelData";
 import { useLocalization } from "@/src/hooks/useLocalization";
-import { navigateToPlace } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 
 export default function ScheduleScreen() {
   const { t } = useLocalization();
+  const { navigate } = useNavigation();
 
   return (
     <AppScreen scroll contentContainerStyle={styles.content}>
@@ -28,11 +28,10 @@ export default function ScheduleScreen() {
           <ScheduleCard
             key={item.id}
             item={item}
-            onPress={() => navigateToPlace(item.placeId)}
+            onPress={() => navigate("Details", { placeId: item.placeId })}
           />
         ))}
       </View>
-      <BottomTabBar active="calendar" />
     </AppScreen>
   );
 }
@@ -42,6 +41,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   content: {
+    paddingBottom: 132,
     paddingTop: spacing.sm,
   },
 });

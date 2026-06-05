@@ -4,12 +4,13 @@ import { CustomButton } from "@/src/components/buttons/CustomButton";
 import { AppInput } from "@/src/components/inputs/AppInput";
 import { AuthScreenShell } from "@/src/screens/Auth/AuthScreenShell";
 import { useLocalization } from "@/src/hooks/useLocalization";
-import { navigateTo } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("imanefh28@gmail.com");
   const { t } = useLocalization();
+  const { navigate } = useNavigation();
 
   return (
     <AuthScreenShell
@@ -27,7 +28,7 @@ export default function ForgotPasswordScreen() {
       />
       <CustomButton
         title={t("resetPassword")}
-        onPress={() => navigateTo("/ForgotPassword2")}
+        onPress={() => navigate("ForgotPassword2")}
       />
     </AuthScreenShell>
   );

@@ -3,19 +3,20 @@ import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { useLocalization } from "@/src/hooks/useLocalization";
-import { replaceWith } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 
 export default function SplashScreen() {
   const { t } = useLocalization();
+  const { replace } = useNavigation();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      replaceWith("/Onboard1");
+      replace("Onboard1");
     }, 1200);
 
     return () => clearTimeout(timeout);
-  }, []);
+  }, [replace]);
 
   return (
     <AppScreen backgroundColor="#FF6320" style={styles.screen} edges={["top", "bottom"]}>

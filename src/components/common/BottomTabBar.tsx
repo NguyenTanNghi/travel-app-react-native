@@ -1,12 +1,12 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router, type Href } from "expo-router";
+import { RouteName, useNavigation } from "@/src/navigation/NavigationContext";
 import { radius, spacing } from "@/src/theme";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 
-type TabKey = "home" | "calendar" | "search" | "messages" | "profile";
+export type TabKey = "home" | "calendar" | "search" | "aiChat" | "profile";
 
 type BottomTabBarProps = {
   active: TabKey;
@@ -15,27 +15,28 @@ type BottomTabBarProps = {
 export function BottomTabBar({ active }: BottomTabBarProps) {
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { navigate } = useNavigation();
   const tabs: {
     key: TabKey;
     label: string;
     icon: keyof typeof Ionicons.glyphMap;
-    href: Href;
+    route: RouteName;
   }[] = [
-    { key: "home", label: t("home"), icon: "home-outline", href: "/Home" as Href },
+    { key: "home", label: t("home"), icon: "home-outline", route: "Home" },
     {
       key: "calendar",
       label: t("calendar"),
       icon: "calendar-outline",
-      href: "/Schedule" as Href,
+      route: "Schedule",
     },
-    { key: "search", label: t("search"), icon: "search", href: "/Search" as Href },
+    { key: "search", label: t("search"), icon: "search", route: "Search" },
     {
-      key: "messages",
-      label: t("messages"),
-      icon: "chatbubble-ellipses-outline",
-      href: "/Messages" as Href,
+      key: "aiChat",
+      label: t("aiChat"),
+      icon: "sparkles-outline",
+      route: "AiChat",
     },
-    { key: "profile", label: t("profile"), icon: "person-outline", href: "/SignIn" as Href },
+    { key: "profile", label: t("profile"), icon: "person-outline", route: "Profile" },
   ];
 
   return (
@@ -56,7 +57,7 @@ export function BottomTabBar({ active }: BottomTabBarProps) {
           <TouchableOpacity
             key={tab.key}
             activeOpacity={0.8}
-            onPress={() => router.push(tab.href)}
+            onPress={() => navigate(tab.route)}
             style={styles.item}
           >
             <View
@@ -105,7 +106,6 @@ const styles = StyleSheet.create({
     elevation: 12,
     flexDirection: "row",
     marginHorizontal: spacing.lg,
-    marginTop: spacing.xl,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
     shadowOffset: { height: 8, width: 0 },

@@ -7,7 +7,7 @@ import { PasswordInput } from "@/src/components/inputs/PasswordInput";
 import { AuthScreenShell } from "@/src/screens/Auth/AuthScreenShell";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
-import { navigateTo, replaceWith } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { radius, spacing } from "@/src/theme";
 
 export default function SignUpScreen() {
@@ -16,6 +16,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("travelapp");
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { navigate, replace } = useNavigation();
 
   return (
     <AuthScreenShell title={t("signUpNow")} subtitle={t("pleaseSignUp")}>
@@ -46,14 +47,14 @@ export default function SignUpScreen() {
       </Text>
       <CustomButton
         title={t("signUp")}
-        onPress={() => replaceWith("/Home")}
+        onPress={() => replace("Home")}
         style={styles.submit}
       />
       <View style={styles.switchRow}>
         <Text style={[styles.muted, { color: theme.colors.textMuted }]}>
           {t("haveAccount")}
         </Text>
-        <TouchableOpacity onPress={() => navigateTo("/SignIn")}>
+        <TouchableOpacity onPress={() => navigate("SignIn")}>
           <Text style={[styles.link, { color: theme.colors.primary }]}>
             {t("signIn")}
           </Text>

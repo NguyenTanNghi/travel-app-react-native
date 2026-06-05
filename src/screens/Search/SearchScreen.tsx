@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { router } from "expo-router";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { EmptyState } from "@/src/components/common/EmptyState";
 import { SearchBar } from "@/src/components/common/SearchBar";
@@ -11,13 +10,14 @@ import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { usePlaces } from "@/src/hooks/usePlaces";
-import { navigateToPlace } from "@/src/utils/navigation";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { spacing } from "@/src/theme";
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { canGoBack, goBack, navigate } = useNavigation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { searchPlaces } = usePlaces();
   const results = searchPlaces(query);
@@ -27,7 +27,7 @@ export default function SearchScreen() {
       <AppHeader
         title={t("search")}
         right={
-          <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : null)}>
+          <TouchableOpacity onPress={() => (canGoBack ? goBack() : navigate("Home"))}>
             <Text style={[styles.cancel, { color: theme.colors.primary }]}>
               {t("cancel")}
             </Text>
@@ -54,7 +54,7 @@ export default function SearchScreen() {
                   place={place}
                   isFavorite={isFavorite(place.id)}
                   onToggleFavorite={() => toggleFavorite(place.id)}
-                  onPress={() => navigateToPlace(place.id)}
+                  onPress={() => navigate("Details", { placeId: place.id })}
                 />
               </View>
             ))}
@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   content: {
+    paddingBottom: 132,
     paddingTop: spacing.sm,
   },
   grid: {
