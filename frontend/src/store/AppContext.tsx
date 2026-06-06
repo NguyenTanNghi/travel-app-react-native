@@ -18,7 +18,6 @@ import type {
   NotificationItem,
   OnboardingSlide,
   Place,
-  ScheduleItem,
   ThemeMode,
   TripPackage,
   UserProfile,
@@ -68,7 +67,6 @@ type AppContextValue = {
   isBookingLoading: boolean;
   onboardingSlides: OnboardingSlide[];
   places: Place[];
-  scheduleItems: ScheduleItem[];
   tripPackages: TripPackage[];
   user: UserProfile | null;
   bookPlace: (payload: BookingPayload) => Promise<Booking>;
@@ -109,7 +107,6 @@ export function AppProvider({ children }: PropsWithChildren) {
     [],
   );
   const [places, setPlaces] = useState<Place[]>([]);
-  const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [tripPackages, setTripPackages] = useState<TripPackage[]>([]);
   const [user, setUser] = useState<UserProfile | null>(null);
 
@@ -141,13 +138,11 @@ export function AppProvider({ children }: PropsWithChildren) {
         appContent,
         nextNotifications,
         nextPlaces,
-        nextScheduleItems,
         nextTripPackages,
       ] = await Promise.all([
         travelApi.getAppContent(),
         travelApi.getNotifications(),
         travelApi.getPlaces(),
-        travelApi.getSchedule(),
         travelApi.getTripPackages(),
       ]);
 
@@ -156,7 +151,6 @@ export function AppProvider({ children }: PropsWithChildren) {
       setNotifications(nextNotifications);
       setOnboardingSlides(appContent.onboardingSlides);
       setPlaces(nextPlaces);
-      setScheduleItems(nextScheduleItems);
       setTripPackages(nextTripPackages);
     } catch (error) {
       setDataError(
@@ -317,7 +311,6 @@ export function AppProvider({ children }: PropsWithChildren) {
       places,
       refreshBookings,
       refreshTravelData,
-      scheduleItems,
       setThemeMode,
       signIn,
       signUp,
@@ -351,7 +344,6 @@ export function AppProvider({ children }: PropsWithChildren) {
       places,
       refreshBookings,
       refreshTravelData,
-      scheduleItems,
       signIn,
       signUp,
       t,

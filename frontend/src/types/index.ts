@@ -38,15 +38,6 @@ export type TripPackage = {
   joined: number;
 };
 
-export type ScheduleItem = {
-  id: string;
-  placeId: string;
-  title: string;
-  image: string;
-  date: string;
-  location: string;
-};
-
 export type OnboardingSlide = {
   id: string;
   titleKey: string;

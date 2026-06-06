@@ -6,7 +6,7 @@ import { radius, spacing } from "@/src/theme";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 
-export type TabKey = "home" | "calendar" | "search" | "aiChat" | "profile";
+export type TabKey = "home" | "about" | "search" | "aiChat" | "profile";
 
 type BottomTabBarProps = {
   active: TabKey;
@@ -24,10 +24,10 @@ export function BottomTabBar({ active }: BottomTabBarProps) {
   }[] = [
     { key: "home", label: t("home"), icon: "home-outline", route: "Home" },
     {
-      key: "calendar",
-      label: t("calendar"),
-      icon: "calendar-outline",
-      route: "Schedule",
+      key: "about",
+      label: t("about"),
+      icon: "information-circle-outline",
+      route: "About",
     },
     { key: "search", label: t("search"), icon: "search", route: "Search" },
     {

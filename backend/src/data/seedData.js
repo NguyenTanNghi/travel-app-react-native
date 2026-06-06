@@ -223,33 +223,6 @@ const tripPackages = [
   },
 ];
 
-const scheduleItems = [
-  {
-    id: "schedule-hisma",
-    placeId: "hisma-desert",
-    title: "Hisma Desert",
-    image: places[3].image,
-    date: "23 January 2026",
-    location: "NEOM, Saudi Arabia",
-  },
-  {
-    id: "schedule-vortex",
-    placeId: "rain-vortex",
-    title: "HSBC Rain Vortex",
-    image: places[4].image,
-    date: "31 January 2026",
-    location: "Jewel Changi, Singapore",
-  },
-  {
-    id: "schedule-siargao",
-    placeId: "siargao-island",
-    title: "Siargao Island",
-    image: places[5].image,
-    date: "29 February 2026",
-    location: "Siargao, Philippines",
-  },
-];
-
 const notifications = [
   {
     id: "notification-1",
@@ -336,7 +309,6 @@ module.exports = {
   notifications,
   onboardingSlides,
   places,
-  scheduleItems,
   tripPackages,
   users,
 };

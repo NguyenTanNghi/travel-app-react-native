@@ -6,7 +6,6 @@ import type {
   NotificationItem,
   OnboardingSlide,
   Place,
-  ScheduleItem,
   TripPackage,
   UserProfile,
 } from "@/src/types";
@@ -152,11 +151,6 @@ export const travelApi = {
       `/places${toQuery(params)}`,
     );
 
-    return response.data;
-  },
-
-  async getSchedule() {
-    const response = await apiRequest<ApiResponse<ScheduleItem[]>>("/schedule");
     return response.data;
   },
 

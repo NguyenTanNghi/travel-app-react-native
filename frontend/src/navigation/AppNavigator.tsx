@@ -3,6 +3,7 @@ import ForgotPasswordScreen from "@/src/screens/Auth/ForgotPasswordScreen";
 import EmailSentScreen from "@/src/screens/Auth/EmailSentScreen";
 import SignInScreen from "@/src/screens/Auth/SignInScreen";
 import SignUpScreen from "@/src/screens/Auth/SignUpScreen";
+import AboutScreen from "@/src/screens/About/AboutScreen";
 import BookingsScreen from "@/src/screens/Bookings/BookingsScreen";
 import DetailsScreen from "@/src/screens/Details/DetailsScreen";
 import FavoritePlacesScreen from "@/src/screens/FavoritePlaces/FavoritePlacesScreen";
@@ -16,7 +17,6 @@ import PopularPlacesScreen from "@/src/screens/PopularPlaces/PopularPlacesScreen
 import EditProfileScreen from "@/src/screens/Profile/EditProfileScreen";
 import ProfileScreen from "@/src/screens/Profile/ProfileScreen";
 import VerificationScreen from "@/src/screens/Profile/VerificationScreen";
-import ScheduleScreen from "@/src/screens/Schedule/ScheduleScreen";
 import SearchScreen from "@/src/screens/Search/SearchScreen";
 import { MainTabLayout } from "@/src/navigation/MainTabLayout";
 import { useNavigation } from "@/src/navigation/NavigationContext";
@@ -49,6 +49,12 @@ export default function AppNavigator() {
       );
     case "Details":
       return <DetailsScreen />;
+    case "About":
+      return (
+        <MainTabLayout active="about">
+          <AboutScreen />
+        </MainTabLayout>
+      );
     case "Bookings":
       return <BookingsScreen />;
     case "PopularPlaces":
@@ -57,12 +63,6 @@ export default function AppNavigator() {
       return <AllPopularTripPackageScreen />;
     case "FavoritePlaces":
       return <FavoritePlacesScreen />;
-    case "Schedule":
-      return (
-        <MainTabLayout active="calendar">
-          <ScheduleScreen />
-        </MainTabLayout>
-      );
     case "Search":
       return (
         <MainTabLayout active="search">

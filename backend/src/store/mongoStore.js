@@ -252,11 +252,6 @@ async function getTripPackageById(packageId) {
   return clone(await tripPackages.findOne({ id: packageId }));
 }
 
-async function listScheduleItems() {
-  const { scheduleItems } = await getCollections();
-  return clone(await scheduleItems.find({}).toArray());
-}
-
 async function listNotifications(filters = {}) {
   const { notifications } = await getCollections();
   const status = String(filters.status ?? "").trim();
@@ -532,7 +527,6 @@ module.exports = {
   listFavoritePlaces,
   listNotifications,
   listPlaces,
-  listScheduleItems,
   listTripPackages,
   registerUser,
   removeFavorite,

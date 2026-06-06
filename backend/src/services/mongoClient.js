@@ -29,7 +29,6 @@ async function ensureIndexes(database) {
     database.collection("bookings").createIndex({ userId: 1 }),
     database.collection("notifications").createIndex({ id: 1 }, { unique: true }),
     database.collection("places").createIndex({ id: 1 }, { unique: true }),
-    database.collection("scheduleItems").createIndex({ id: 1 }, { unique: true }),
     database.collection("sessions").createIndex({ token: 1 }, { unique: true }),
     database.collection("tripPackages").createIndex({ id: 1 }, { unique: true }),
     database.collection("users").createIndex({ id: 1 }, { unique: true }),
@@ -71,9 +70,16 @@ async function seedCollectionIfEmpty(database, collectionName, documents) {
 }
 
 async function ensureSeedData(database) {
+  const hasScheduleItems = await database
+    .listCollections({ name: "scheduleItems" })
+    .hasNext();
+
+  if (hasScheduleItems) {
+    await database.collection("scheduleItems").drop();
+  }
+
   await seedCollectionIfEmpty(database, "places", seed.places);
   await seedCollectionIfEmpty(database, "tripPackages", seed.tripPackages);
-  await seedCollectionIfEmpty(database, "scheduleItems", seed.scheduleItems);
   await seedCollectionIfEmpty(database, "notifications", seed.notifications);
   await seedCollectionIfEmpty(
     database,
@@ -126,7 +132,6 @@ async function getCollections() {
     bookings: database.collection("bookings"),
     notifications: database.collection("notifications"),
     places: database.collection("places"),
-    scheduleItems: database.collection("scheduleItems"),
     sessions: database.collection("sessions"),
     tripPackages: database.collection("tripPackages"),
     users: database.collection("users"),
