@@ -402,7 +402,7 @@ async function createBooking(userId, payload) {
     },
     status: "confirmed",
     totalPrice: unitPrice * guests,
-    travelDate: payload.travelDate ?? null,
+    travelDate: String(payload.travelDate ?? "").trim(),
     userId,
   };
 

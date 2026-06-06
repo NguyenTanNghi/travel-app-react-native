@@ -15,13 +15,17 @@ import { LoadingView } from "@/src/components/common/LoadingView";
 import { RatingStars } from "@/src/components/common/RatingStars";
 import { CustomButton } from "@/src/components/buttons/CustomButton";
 import { AppHeader } from "@/src/components/headers/AppHeader";
-import { AppInput } from "@/src/components/inputs/AppInput";
+import { DatePickerInput } from "@/src/components/inputs/DatePickerInput";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { usePlaces } from "@/src/hooks/usePlaces";
 import { useNavigation } from "@/src/navigation/NavigationContext";
 import { useAppContext } from "@/src/store/AppContext";
+import {
+  getTomorrowDateInputValue,
+  validateFutureDateInput,
+} from "@/src/utils/date";
 import { formatCurrency } from "@/src/utils/format";
 import { radius, spacing } from "@/src/theme";
 
@@ -37,6 +41,7 @@ export default function DetailsScreen() {
   const { getPlaceById } = usePlaces();
   const { isFavorite, toggleFavorite } = useFavorites();
   const place = getPlaceById(currentRoute.params?.placeId);
+  const minimumTravelDate = getTomorrowDateInputValue();
 
   if (!place) {
     return <LoadingView />;
@@ -53,12 +58,30 @@ export default function DetailsScreen() {
       return;
     }
 
+    const normalizedTravelDate = travelDate.trim();
+    const dateValidationResult = validateFutureDateInput(normalizedTravelDate);
+
+    if (dateValidationResult === "required") {
+      setBookingError(t("travelDateRequired"));
+      return;
+    }
+
+    if (dateValidationResult === "invalid") {
+      setBookingError(t("travelDateInvalid"));
+      return;
+    }
+
+    if (dateValidationResult === "notFuture") {
+      setBookingError(t("travelDateMustBeFuture"));
+      return;
+    }
+
     setBooking(true);
 
     void bookPlace({
       guests,
       placeId: place.id,
-      travelDate: travelDate.trim() || undefined,
+      travelDate: normalizedTravelDate,
     })
       .then(() => {
         navigate("Bookings");
@@ -143,14 +166,19 @@ export default function DetailsScreen() {
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
             {t("bookingDetails")}
           </Text>
-          <AppInput
+          <DatePickerInput
             label={t("travelDate")}
-            leftIcon="calendar-outline"
-            placeholder="YYYY-MM-DD"
+            minimumDate={minimumTravelDate}
             value={travelDate}
-            onChangeText={setTravelDate}
+            onChange={(value) => {
+              setTravelDate(value);
+              setBookingError("");
+            }}
             containerStyle={styles.field}
           />
+          <Text style={[styles.dateHint, { color: theme.colors.textMuted }]}>
+            {t("travelDateFutureHint")} {minimumTravelDate}
+          </Text>
           <View style={styles.guestRow}>
             <View>
               <Text style={[styles.guestLabel, { color: theme.colors.text }]}>
@@ -213,6 +241,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: 0,
+  },
+  dateHint: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: spacing.xs,
   },
   description: {
     fontSize: 14,

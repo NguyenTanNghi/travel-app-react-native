@@ -1,6 +1,7 @@
 const express = require("express");
 const { requireAuth } = require("../middleware/auth");
 const store = require("../store/mongoStore");
+const { validateFutureTravelDate } = require("../utils/date");
 
 const router = express.Router();
 
@@ -25,7 +26,19 @@ router.post("/", async (req, res, next) => {
       });
     }
 
-    const booking = await store.createBooking(req.user.id, req.body);
+    const travelDateValidation = validateFutureTravelDate(req.body.travelDate);
+
+    if (!travelDateValidation.isValid) {
+      return res.status(400).json({
+        error: "Bad Request",
+        message: travelDateValidation.message,
+      });
+    }
+
+    const booking = await store.createBooking(req.user.id, {
+      ...req.body,
+      travelDate: travelDateValidation.value,
+    });
 
     if (!booking) {
       return res.status(404).json({

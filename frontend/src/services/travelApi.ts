@@ -93,7 +93,7 @@ export const travelApi = {
   async createBooking(payload: {
     guests?: number;
     placeId: string;
-    travelDate?: string;
+    travelDate: string;
   }) {
     const response = await apiRequest<ApiResponse<Booking>>("/bookings", {
       body: JSON.stringify(payload),

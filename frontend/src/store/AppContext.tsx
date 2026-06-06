@@ -35,7 +35,7 @@ type SignUpPayload = AuthCredentials & {
 type BookingPayload = {
   guests?: number;
   placeId: string;
-  travelDate?: string;
+  travelDate: string;
 };
 
 type ProfileUpdate = Partial<
