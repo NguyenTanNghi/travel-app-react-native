@@ -19,10 +19,28 @@ import ProfileScreen from "@/src/screens/Profile/ProfileScreen";
 import VerificationScreen from "@/src/screens/Profile/VerificationScreen";
 import SearchScreen from "@/src/screens/Search/SearchScreen";
 import { MainTabLayout } from "@/src/navigation/MainTabLayout";
-import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useNavigation, type RouteName } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
+
+const publicRoutes: RouteName[] = [
+  "Splash",
+  "Onboard1",
+  "Onboard2",
+  "Onboard3",
+  "SignIn",
+  "SignUp",
+  "ForgotPassword",
+  "ForgotPassword2",
+  "Verification",
+];
 
 export default function AppNavigator() {
   const { currentRoute } = useNavigation();
+  const { apiToken } = useAppContext();
+
+  if (!apiToken && !publicRoutes.includes(currentRoute.name)) {
+    return <SignInScreen />;
+  }
 
   switch (currentRoute.name) {
     case "Splash":

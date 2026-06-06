@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,8 +17,10 @@ import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { getAiTravelSuggestion } from "@/src/services/aiTravelService";
 import { useAppContext } from "@/src/store/AppContext";
+import { useNavigation } from "@/src/navigation/NavigationContext";
 import { radius, spacing } from "@/src/theme";
-import type { AiChatMessage } from "@/src/types";
+import { formatCurrency } from "@/src/utils/format";
+import type { AiChatMessage, Place } from "@/src/types";
 
 function getCurrentTime() {
   const date = new Date();
@@ -27,6 +30,46 @@ function getCurrentTime() {
   return `${hours}:${minutes}`;
 }
 
+function RecommendedPlaceCard({
+  onPress,
+  place,
+}: {
+  onPress: () => void;
+  place: Place;
+}) {
+  const { theme } = useAppTheme();
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={[
+        styles.placeCard,
+        { backgroundColor: theme.colors.surfaceRaised },
+      ]}
+    >
+      <Image source={{ uri: place.image }} style={styles.placeImage} />
+      <View style={styles.placeInfo}>
+        <Text numberOfLines={1} style={[styles.placeTitle, { color: theme.colors.text }]}>
+          {place.title}
+        </Text>
+        <View style={styles.placeMetaRow}>
+          <Ionicons name="location-outline" size={13} color={theme.colors.icon} />
+          <Text
+            numberOfLines={1}
+            style={[styles.placeMeta, { color: theme.colors.textMuted }]}
+          >
+            {place.country}
+          </Text>
+        </View>
+        <Text style={[styles.placePrice, { color: theme.colors.primary }]}>
+          {formatCurrency(place.price)}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 export default function AiChatScreen() {
   const [draft, setDraft] = useState("");
   const [isThinking, setThinking] = useState(false);
@@ -34,6 +77,7 @@ export default function AiChatScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const { theme } = useAppTheme();
   const { language, t } = useLocalization();
+  const { navigate } = useNavigation();
   const { aiChatStarterMessages } = useAppContext();
 
   useEffect(() => {
@@ -76,6 +120,7 @@ export default function AiChatScreen() {
         .then((reply) => {
           const assistantMessage: AiChatMessage = {
             id: `assistant-${Date.now()}`,
+            recommendedPlaces: reply.places ?? [],
             role: "assistant",
             text: reply.text,
             time: getCurrentTime(),
@@ -158,6 +203,21 @@ export default function AiChatScreen() {
                   <Text style={[styles.messageText, { color: theme.colors.text }]}>
                     {message.text}
                   </Text>
+                  {!isUser && message.recommendedPlaces?.length ? (
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.placeScroller}
+                    >
+                      {message.recommendedPlaces.map((place) => (
+                        <RecommendedPlaceCard
+                          key={place.id}
+                          place={place}
+                          onPress={() => navigate("Details", { placeId: place.id })}
+                        />
+                      ))}
+                    </ScrollView>
+                  ) : null}
                   <Text style={[styles.time, { color: theme.colors.textMuted }]}>
                     {message.time}
                   </Text>
@@ -335,5 +395,40 @@ const styles = StyleSheet.create({
   },
   userRow: {
     justifyContent: "flex-end",
+  },
+  placeCard: {
+    borderRadius: radius.md,
+    marginRight: spacing.sm,
+    overflow: "hidden",
+    width: 148,
+  },
+  placeImage: {
+    height: 84,
+    width: "100%",
+  },
+  placeInfo: {
+    padding: spacing.xs,
+  },
+  placeMeta: {
+    flex: 1,
+    fontSize: 11,
+    marginLeft: spacing.xxs,
+  },
+  placeMetaRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginTop: spacing.xxs,
+  },
+  placePrice: {
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: spacing.xxs,
+  },
+  placeScroller: {
+    marginTop: spacing.sm,
+  },
+  placeTitle: {
+    fontSize: 12,
+    fontWeight: "900",
   },
 });

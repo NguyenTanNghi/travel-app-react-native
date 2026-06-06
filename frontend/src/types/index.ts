@@ -56,6 +56,7 @@ export type NotificationItem = {
 
 export type AiChatMessage = {
   id: string;
+  recommendedPlaces?: Place[];
   text: string;
   time: string;
   role: "assistant" | "user";

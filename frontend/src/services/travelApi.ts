@@ -34,6 +34,7 @@ type AppContentPayload = {
 };
 
 type AiTravelPayload = {
+  places?: Place[];
   source: "provider" | "local";
   text: string;
 };
