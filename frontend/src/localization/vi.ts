@@ -37,6 +37,7 @@ const vi: typeof en = {
   checkEmailMessage: "Chúng tôi đã gửi hướng dẫn khôi phục mật khẩu tới email của bạn.",
   signIn: "Đăng nhập",
   signUp: "Đăng ký",
+  sendingOtp: "Đang gửi OTP...",
   noAccount: "Chưa có tài khoản?",
   haveAccount: "Đã có tài khoản?",
   discoverTitle: "Khám phá những kỳ quan của thế giới!",

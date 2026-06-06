@@ -35,6 +35,7 @@ const en = {
   checkEmailMessage: "We have sent password recovery instructions to your email.",
   signIn: "Sign In",
   signUp: "Sign Up",
+  sendingOtp: "Sending OTP...",
   noAccount: "Don't have an account?",
   haveAccount: "Already have an account?",
   discoverTitle: "Discover the wonders of the world!",

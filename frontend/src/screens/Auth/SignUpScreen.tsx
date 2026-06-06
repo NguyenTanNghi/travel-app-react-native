@@ -108,7 +108,7 @@ export default function SignUpScreen() {
       ) : null}
       <CustomButton
         disabled={isSubmitting}
-        title={t("signUp")}
+        title={isSubmitting ? t("sendingOtp") : t("signUp")}
         onPress={handleSignUp}
         style={styles.submit}
       />

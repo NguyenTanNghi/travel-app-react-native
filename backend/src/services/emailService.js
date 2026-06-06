@@ -1,5 +1,15 @@
 const nodemailer = require("nodemailer");
 
+const DEFAULT_MAIL_TIMEOUT_MS = 12000;
+
+function getMailTimeoutMs() {
+  const configuredTimeout = Number(process.env.MAIL_TIMEOUT_MS);
+
+  return Number.isFinite(configuredTimeout) && configuredTimeout > 0
+    ? configuredTimeout
+    : DEFAULT_MAIL_TIMEOUT_MS;
+}
+
 function buildTransporter() {
   const user = process.env.MAIL_USERNAME;
   const pass = process.env.MAIL_PASSWORD;
@@ -13,7 +23,10 @@ function buildTransporter() {
       pass,
       user,
     },
+    connectionTimeout: getMailTimeoutMs(),
+    greetingTimeout: getMailTimeoutMs(),
     service: process.env.MAIL_SERVICE ?? "gmail",
+    socketTimeout: getMailTimeoutMs(),
   });
 }
 
