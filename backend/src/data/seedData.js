@@ -1,20 +1,11 @@
-import type {
-  AiChatMessage,
-  NotificationItem,
-  OnboardingSlide,
-  Place,
-  ScheduleItem,
-  TripPackage,
-} from "@/src/types";
-
-export const avatarImages = [
+const avatarImages = [
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80",
   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80",
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80",
   "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=160&q=80",
 ];
 
-export const places: Place[] = [
+const places = [
   {
     id: "khai-island",
     title: "Khai Island Beach",
@@ -185,7 +176,7 @@ export const places: Place[] = [
   },
 ];
 
-export const tripPackages: TripPackage[] = [
+const tripPackages = [
   {
     id: "package-niladri",
     placeId: "niladri-reservoir",
@@ -232,7 +223,7 @@ export const tripPackages: TripPackage[] = [
   },
 ];
 
-export const scheduleItems: ScheduleItem[] = [
+const scheduleItems = [
   {
     id: "schedule-hisma",
     placeId: "hisma-desert",
@@ -259,31 +250,7 @@ export const scheduleItems: ScheduleItem[] = [
   },
 ];
 
-export const onboardingSlides: OnboardingSlide[] = [
-  {
-    id: "onboarding-1",
-    titleKey: "onboarding1Title",
-    descriptionKey: "onboarding1Description",
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "onboarding-2",
-    titleKey: "onboarding2Title",
-    descriptionKey: "onboarding2Description",
-    image:
-      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "onboarding-3",
-    titleKey: "onboarding3Title",
-    descriptionKey: "onboarding3Description",
-    image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
-  },
-];
-
-export const notifications: NotificationItem[] = [
+const notifications = [
   {
     id: "notification-1",
     title: "Super Offer",
@@ -310,7 +277,31 @@ export const notifications: NotificationItem[] = [
   },
 ];
 
-export const aiChatStarterMessages: AiChatMessage[] = [
+const onboardingSlides = [
+  {
+    id: "onboarding-1",
+    titleKey: "onboarding1Title",
+    descriptionKey: "onboarding1Description",
+    image:
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "onboarding-2",
+    titleKey: "onboarding2Title",
+    descriptionKey: "onboarding2Description",
+    image:
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "onboarding-3",
+    titleKey: "onboarding3Title",
+    descriptionKey: "onboarding3Description",
+    image:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+  },
+];
+
+const aiChatStarterMessages = [
   {
     id: "ai-welcome",
     role: "assistant",
@@ -318,3 +309,34 @@ export const aiChatStarterMessages: AiChatMessage[] = [
     time: "Now",
   },
 ];
+
+const users = [
+  {
+    id: "user-demo",
+    name: "Imane fh",
+    firstName: "fh",
+    lastName: "imane",
+    email: "imanefh28@gmail.com",
+    password: "travelapp",
+    avatar: avatarImages[0],
+    location: "Algeria",
+    mobileNumber: "+213 7653247990",
+    isEmailVerified: true,
+    emailVerifiedAt: "2026-01-01T00:00:00.000Z",
+    rewardPoints: 50,
+    travelTrips: 40,
+    bucketList: 200,
+    favoritePlaceIds: ["niladri-reservoir", "casa-las-tortugas"],
+  },
+];
+
+module.exports = {
+  aiChatStarterMessages,
+  avatarImages,
+  notifications,
+  onboardingSlides,
+  places,
+  scheduleItems,
+  tripPackages,
+  users,
+};

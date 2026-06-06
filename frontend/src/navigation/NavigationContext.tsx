@@ -18,6 +18,7 @@ export type RouteName =
   | "ForgotPassword2"
   | "Home"
   | "Details"
+  | "Bookings"
   | "PopularPlaces"
   | "AllPopularTripPackage"
   | "FavoritePlaces"
@@ -30,7 +31,9 @@ export type RouteName =
   | "Verification";
 
 export type RouteParams = {
+  email?: string;
   placeId?: string;
+  returnTo?: RouteName;
 };
 
 type RouteState = {

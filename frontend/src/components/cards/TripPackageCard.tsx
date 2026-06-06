@@ -3,11 +3,11 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AvatarStack } from "@/src/components/common/AvatarStack";
 import { RatingStars } from "@/src/components/common/RatingStars";
-import { avatarImages } from "@/src/data/travelData";
 import { formatCurrency, formatPackageDate } from "@/src/utils/format";
 import { radius, spacing } from "@/src/theme";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
+import { useAppContext } from "@/src/store/AppContext";
 import type { TripPackage } from "@/src/types";
 
 type TripPackageCardProps = {
@@ -18,6 +18,7 @@ type TripPackageCardProps = {
 export function TripPackageCard({ onPress, tripPackage }: TripPackageCardProps) {
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { avatarImages } = useAppContext();
 
   return (
     <TouchableOpacity

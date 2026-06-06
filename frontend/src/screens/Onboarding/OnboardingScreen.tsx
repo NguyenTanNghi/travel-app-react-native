@@ -8,9 +8,11 @@ import {
 } from "react-native";
 import { CustomButton } from "@/src/components/buttons/CustomButton";
 import { AppScreen } from "@/src/components/common/AppScreen";
-import { onboardingSlides } from "@/src/data/travelData";
+import { LoadingView } from "@/src/components/common/LoadingView";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 import type { TranslationKey } from "@/src/localization";
 
@@ -20,8 +22,38 @@ type OnboardingScreenProps = {
 
 export default function OnboardingScreen({ initialIndex = 0 }: OnboardingScreenProps) {
   const [index, setIndex] = useState(initialIndex);
+  const { theme } = useAppTheme();
   const { t } = useLocalization();
   const { replace } = useNavigation();
+  const { dataError, isDataLoading, onboardingSlides, refreshTravelData } =
+    useAppContext();
+
+  if (isDataLoading && onboardingSlides.length === 0) {
+    return <LoadingView />;
+  }
+
+  if (onboardingSlides.length === 0) {
+    return (
+      <AppScreen contentContainerStyle={styles.errorContent} scroll>
+        <View style={styles.errorBlock}>
+          <Text style={[styles.errorTitle, { color: theme.colors.text }]}>
+            {t("loadDataError")}
+          </Text>
+          <Text style={[styles.errorMessage, { color: theme.colors.textMuted }]}>
+            {dataError ?? "Please check the backend API URL."}
+          </Text>
+          <CustomButton
+            title={t("retry")}
+            onPress={() => {
+              void refreshTravelData();
+            }}
+            style={styles.retryButton}
+          />
+        </View>
+      </AppScreen>
+    );
+  }
+
   const slide = onboardingSlides[index] ?? onboardingSlides[0];
   const isLast = index === onboardingSlides.length - 1;
 
@@ -107,6 +139,25 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: spacing.xl,
   },
+  errorBlock: {
+    alignItems: "center",
+  },
+  errorContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  errorMessage: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: spacing.xs,
+    textAlign: "center",
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "900",
+    textAlign: "center",
+  },
   image: {
     flex: 1,
   },
@@ -119,6 +170,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     paddingTop: spacing.lg,
+  },
+  retryButton: {
+    alignSelf: "stretch",
+    marginTop: spacing.xl,
   },
   screen: {
     backgroundColor: "#111318",

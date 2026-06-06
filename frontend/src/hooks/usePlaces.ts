@@ -1,10 +1,12 @@
-import { useCallback } from "react";
-import { places, tripPackages } from "@/src/data/travelData";
+import { useCallback, useMemo } from "react";
+import { useAppContext } from "@/src/store/AppContext";
 
 export function usePlaces() {
+  const { dataError, isDataLoading, places, tripPackages } = useAppContext();
+
   const getPlaceById = useCallback(
     (id?: string) => places.find((place) => place.id === id) ?? places[0],
-    [],
+    [places],
   );
 
   const searchPlaces = useCallback((query: string) => {
@@ -20,11 +22,18 @@ export function usePlaces() {
         .toLowerCase()
         .includes(normalizedQuery),
     );
-  }, []);
+  }, [places]);
+
+  const popularPlaces = useMemo(
+    () => places.filter((place) => place.isPopular),
+    [places],
+  );
 
   return {
+    dataError,
+    isDataLoading,
     places,
-    popularPlaces: places.filter((place) => place.isPopular),
+    popularPlaces,
     tripPackages,
     getPlaceById,
     searchPlaces,

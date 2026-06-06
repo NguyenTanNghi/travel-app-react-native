@@ -3,6 +3,7 @@ import ForgotPasswordScreen from "@/src/screens/Auth/ForgotPasswordScreen";
 import EmailSentScreen from "@/src/screens/Auth/EmailSentScreen";
 import SignInScreen from "@/src/screens/Auth/SignInScreen";
 import SignUpScreen from "@/src/screens/Auth/SignUpScreen";
+import BookingsScreen from "@/src/screens/Bookings/BookingsScreen";
 import DetailsScreen from "@/src/screens/Details/DetailsScreen";
 import FavoritePlacesScreen from "@/src/screens/FavoritePlaces/FavoritePlacesScreen";
 import HomeScreen from "@/src/screens/Home/HomeScreen";
@@ -48,6 +49,8 @@ export default function AppNavigator() {
       );
     case "Details":
       return <DetailsScreen />;
+    case "Bookings":
+      return <BookingsScreen />;
     case "PopularPlaces":
       return <PopularPlacesScreen />;
     case "AllPopularTripPackage":

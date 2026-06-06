@@ -8,14 +8,36 @@ import { AuthScreenShell } from "@/src/screens/Auth/AuthScreenShell";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 
 export default function SignInScreen() {
-  const [email, setEmail] = useState("imanefh28@gmail.com");
-  const [password, setPassword] = useState("travelapp");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setSubmitting] = useState(false);
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { signIn } = useAppContext();
   const { navigate, replace } = useNavigation();
+
+  const handleSignIn = () => {
+    setErrorMessage("");
+    setSubmitting(true);
+
+    void signIn({ email, password })
+      .then(() => {
+        replace("Home");
+      })
+      .catch((error) => {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Unable to sign in",
+        );
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  };
 
   return (
     <AuthScreenShell title={t("signInNow")} subtitle={t("pleaseSignIn")}>
@@ -34,6 +56,11 @@ export default function SignInScreen() {
         value={password}
         onChangeText={setPassword}
       />
+      {errorMessage ? (
+        <Text style={[styles.error, { color: theme.colors.danger }]}>
+          {errorMessage}
+        </Text>
+      ) : null}
       <TouchableOpacity
         activeOpacity={0.75}
         onPress={() => navigate("ForgotPassword")}
@@ -44,8 +71,9 @@ export default function SignInScreen() {
         </Text>
       </TouchableOpacity>
       <CustomButton
+        disabled={isSubmitting}
         title={t("signIn")}
-        onPress={() => replace("Home")}
+        onPress={handleSignIn}
         style={styles.submit}
       />
       <View style={styles.switchRow}>
@@ -76,6 +104,11 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   field: {
     marginBottom: spacing.md,
+  },
+  error: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: spacing.sm,
   },
   forgotWrap: {
     alignItems: "flex-end",

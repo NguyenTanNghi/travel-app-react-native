@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,10 +12,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { AppHeader } from "@/src/components/headers/AppHeader";
-import { aiChatStarterMessages } from "@/src/data/travelData";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { getAiTravelSuggestion } from "@/src/services/aiTravelService";
+import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 import type { AiChatMessage } from "@/src/types";
 
@@ -30,10 +30,17 @@ function getCurrentTime() {
 export default function AiChatScreen() {
   const [draft, setDraft] = useState("");
   const [isThinking, setThinking] = useState(false);
-  const [messages, setMessages] = useState<AiChatMessage[]>(aiChatStarterMessages);
+  const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const scrollRef = useRef<ScrollView>(null);
   const { theme } = useAppTheme();
   const { language, t } = useLocalization();
+  const { aiChatStarterMessages } = useAppContext();
+
+  useEffect(() => {
+    if (messages.length === 0 && aiChatStarterMessages.length > 0) {
+      setMessages(aiChatStarterMessages);
+    }
+  }, [aiChatStarterMessages, messages.length]);
 
   const quickPrompts = [
     t("aiQuickBeach"),

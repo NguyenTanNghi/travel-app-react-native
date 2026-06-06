@@ -69,3 +69,38 @@ export type AiChatMessage = {
   time: string;
   role: "assistant" | "user";
 };
+
+export type UserProfile = {
+  id: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatar: string;
+  location: string;
+  mobileNumber: string;
+  isEmailVerified: boolean;
+  emailVerifiedAt: string | null;
+  rewardPoints: number;
+  travelTrips: number;
+  bucketList: number;
+  favoritePlaceIds: string[];
+};
+
+export type Booking = {
+  id: string;
+  userId: string;
+  placeId: string;
+  placeSnapshot?: {
+    country: string;
+    image: string;
+    location: string;
+    price: number;
+    title: string;
+  };
+  status: "confirmed" | "cancelled";
+  guests: number;
+  travelDate: string | null;
+  totalPrice: number;
+  createdAt: string;
+};

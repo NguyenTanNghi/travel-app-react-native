@@ -6,18 +6,49 @@ import { AppHeader } from "@/src/components/headers/AppHeader";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 
 export default function VerificationScreen() {
-  const [code, setCode] = useState(["8", "6", "9", "5"]);
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setSubmitting] = useState(false);
   const { theme } = useAppTheme();
   const { t } = useLocalization();
-  const { goBack } = useNavigation();
+  const { user, verifyOtp } = useAppContext();
+  const { currentRoute, goBack, replace } = useNavigation();
+  const verificationEmail = currentRoute.params?.email ?? user?.email ?? "";
 
   const updateDigit = (value: string, index: number) => {
     const nextCode = [...code];
     nextCode[index] = value.slice(-1);
     setCode(nextCode);
+  };
+
+  const handleVerify = () => {
+    setErrorMessage("");
+    setSubmitting(true);
+
+    void verifyOtp({
+      code: code.join(""),
+      email: verificationEmail,
+    })
+      .then(() => {
+        if (currentRoute.params?.returnTo) {
+          replace(currentRoute.params.returnTo);
+          return;
+        }
+
+        goBack();
+      })
+      .catch((error) => {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Unable to verify code",
+        );
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   return (
@@ -54,7 +85,17 @@ export default function VerificationScreen() {
           ))}
         </View>
 
-        <CustomButton title={t("verify")} onPress={goBack} style={styles.button} />
+        {errorMessage ? (
+          <Text style={[styles.error, { color: theme.colors.danger }]}>
+            {errorMessage}
+          </Text>
+        ) : null}
+        <CustomButton
+          disabled={isSubmitting}
+          title={t("verify")}
+          onPress={handleVerify}
+          style={styles.button}
+        />
         <View style={styles.resendRow}>
           <Text style={[styles.resend, { color: theme.colors.textMuted }]}>
             {t("resendCodeTo")}
@@ -78,13 +119,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "800",
     height: 48,
-    width: 54,
+    width: 44,
   },
   codeRow: {
     flexDirection: "row",
-    gap: spacing.md,
+    gap: spacing.xs,
     justifyContent: "center",
     marginTop: spacing.md,
+  },
+  error: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: spacing.md,
+    textAlign: "center",
   },
   content: {
     paddingTop: spacing.sm,

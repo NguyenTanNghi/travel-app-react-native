@@ -8,15 +8,40 @@ import { AuthScreenShell } from "@/src/screens/Auth/AuthScreenShell";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 
 export default function SignUpScreen() {
-  const [name, setName] = useState("Imane Fhs");
-  const [email, setEmail] = useState("imanefh28@gmail.com");
-  const [password, setPassword] = useState("travelapp");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setSubmitting] = useState(false);
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { signUp } = useAppContext();
   const { navigate, replace } = useNavigation();
+
+  const handleSignUp = () => {
+    setErrorMessage("");
+    setSubmitting(true);
+
+    void signUp({ email, name, password })
+      .then(() => {
+        replace("Verification", {
+          email,
+          returnTo: "Home",
+        });
+      })
+      .catch((error) => {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Unable to sign up",
+        );
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  };
 
   return (
     <AuthScreenShell title={t("signUpNow")} subtitle={t("pleaseSignUp")}>
@@ -45,9 +70,15 @@ export default function SignUpScreen() {
       <Text style={[styles.hint, { color: theme.colors.textMuted }]}>
         {t("passwordHint")}
       </Text>
+      {errorMessage ? (
+        <Text style={[styles.error, { color: theme.colors.danger }]}>
+          {errorMessage}
+        </Text>
+      ) : null}
       <CustomButton
+        disabled={isSubmitting}
         title={t("signUp")}
-        onPress={() => replace("Home")}
+        onPress={handleSignUp}
         style={styles.submit}
       />
       <View style={styles.switchRow}>
@@ -78,6 +109,11 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   field: {
     marginBottom: spacing.md,
+  },
+  error: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: spacing.sm,
   },
   hint: {
     fontSize: 14,

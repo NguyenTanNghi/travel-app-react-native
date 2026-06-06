@@ -1,28 +1,77 @@
-import React from "react";
-import { Image, ImageBackground, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import {
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { AvatarStack } from "@/src/components/common/AvatarStack";
 import { IconButton } from "@/src/components/common/IconButton";
+import { LoadingView } from "@/src/components/common/LoadingView";
 import { RatingStars } from "@/src/components/common/RatingStars";
 import { CustomButton } from "@/src/components/buttons/CustomButton";
 import { AppHeader } from "@/src/components/headers/AppHeader";
-import { avatarImages } from "@/src/data/travelData";
+import { AppInput } from "@/src/components/inputs/AppInput";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { usePlaces } from "@/src/hooks/usePlaces";
 import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
 import { formatCurrency } from "@/src/utils/format";
 import { radius, spacing } from "@/src/theme";
 
 export default function DetailsScreen() {
+  const [bookingError, setBookingError] = useState("");
+  const [guests, setGuests] = useState(1);
+  const [isBooking, setBooking] = useState(false);
+  const [travelDate, setTravelDate] = useState("");
   const { theme } = useAppTheme();
   const { t } = useLocalization();
-  const { currentRoute } = useNavigation();
+  const { apiToken, avatarImages, bookPlace } = useAppContext();
+  const { currentRoute, navigate } = useNavigation();
   const { getPlaceById } = usePlaces();
   const { isFavorite, toggleFavorite } = useFavorites();
   const place = getPlaceById(currentRoute.params?.placeId);
+
+  if (!place) {
+    return <LoadingView />;
+  }
+
+  const totalPrice = place.price * guests;
+
+  const handleBookNow = () => {
+    setBookingError("");
+
+    if (!apiToken) {
+      setBookingError(t("signInToBook"));
+      navigate("SignIn");
+      return;
+    }
+
+    setBooking(true);
+
+    void bookPlace({
+      guests,
+      placeId: place.id,
+      travelDate: travelDate.trim() || undefined,
+    })
+      .then(() => {
+        navigate("Bookings");
+      })
+      .catch((error) => {
+        setBookingError(
+          error instanceof Error ? error.message : t("bookingFailed"),
+        );
+      })
+      .finally(() => {
+        setBooking(false);
+      });
+  };
 
   return (
     <AppScreen scroll edges={["top"]} contentContainerStyle={styles.content}>
@@ -90,7 +139,66 @@ export default function DetailsScreen() {
           {place.description}
         </Text>
 
-        <CustomButton title={t("bookNow")} onPress={() => {}} style={styles.button} />
+        <View style={styles.bookingSection}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            {t("bookingDetails")}
+          </Text>
+          <AppInput
+            label={t("travelDate")}
+            leftIcon="calendar-outline"
+            placeholder="YYYY-MM-DD"
+            value={travelDate}
+            onChangeText={setTravelDate}
+            containerStyle={styles.field}
+          />
+          <View style={styles.guestRow}>
+            <View>
+              <Text style={[styles.guestLabel, { color: theme.colors.text }]}>
+                {t("guests")}
+              </Text>
+              <Text style={[styles.guestTotal, { color: theme.colors.textMuted }]}>
+                {t("total")}: {formatCurrency(totalPrice)}
+              </Text>
+            </View>
+            <View style={styles.stepper}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setGuests((current) => Math.max(1, current - 1))}
+                style={[
+                  styles.stepperButton,
+                  { backgroundColor: theme.colors.surfaceMuted },
+                ]}
+              >
+                <Ionicons name="remove" size={18} color={theme.colors.text} />
+              </TouchableOpacity>
+              <Text style={[styles.guestCount, { color: theme.colors.text }]}>
+                {guests}
+              </Text>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setGuests((current) => current + 1)}
+                style={[
+                  styles.stepperButton,
+                  { backgroundColor: theme.colors.primary },
+                ]}
+              >
+                <Ionicons name="add" size={18} color={theme.colors.white} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          {bookingError ? (
+            <Text style={[styles.errorText, { color: theme.colors.danger }]}>
+              {bookingError}
+            </Text>
+          ) : null}
+        </View>
+
+        <CustomButton
+          disabled={isBooking}
+          title={t("bookNow")}
+          onPress={handleBookNow}
+          style={styles.button}
+        />
       </View>
     </AppScreen>
   );
@@ -100,12 +208,23 @@ const styles = StyleSheet.create({
   button: {
     marginTop: spacing.xl,
   },
+  bookingSection: {
+    marginTop: spacing.xl,
+  },
   content: {
     paddingBottom: 0,
   },
   description: {
     fontSize: 14,
     lineHeight: 22,
+  },
+  errorText: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: spacing.sm,
+  },
+  field: {
+    marginTop: spacing.sm,
   },
   dragHandle: {
     alignSelf: "center",
@@ -135,6 +254,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
   },
+  guestCount: {
+    fontSize: 16,
+    fontWeight: "900",
+    minWidth: 26,
+    textAlign: "center",
+  },
+  guestLabel: {
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  guestRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: spacing.md,
+  },
+  guestTotal: {
+    fontSize: 13,
+    fontWeight: "700",
+    marginTop: spacing.xxs,
+  },
   hero: {
     height: 430,
   },
@@ -155,6 +295,18 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 15,
     fontWeight: "800",
+  },
+  stepper: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  stepperButton: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    height: 36,
+    justifyContent: "center",
+    width: 36,
   },
   reviewText: {
     fontSize: 13,

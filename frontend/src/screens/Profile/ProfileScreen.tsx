@@ -4,10 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { IconButton } from "@/src/components/common/IconButton";
 import { AppHeader } from "@/src/components/headers/AppHeader";
-import { avatarImages } from "@/src/data/travelData";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 
 type ProfileMenuItem = {
@@ -19,7 +19,9 @@ type ProfileMenuItem = {
 export default function ProfileScreen() {
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { avatarImages, user } = useAppContext();
   const { navigate } = useNavigation();
+  const avatarUri = user?.avatar ?? avatarImages[0];
 
   const menuItems: ProfileMenuItem[] = [
     { icon: "person-outline", label: t("profile"), onPress: () => navigate("EditProfile") },
@@ -31,7 +33,7 @@ export default function ProfileScreen() {
     {
       icon: "time-outline",
       label: t("previousTrips"),
-      onPress: () => navigate("Schedule"),
+      onPress: () => navigate("Bookings"),
     },
     { icon: "settings-outline", label: t("settings") },
     { icon: "shield-checkmark-outline", label: t("verification"), onPress: () => navigate("Verification") },
@@ -52,10 +54,21 @@ export default function ProfileScreen() {
       />
       <View style={styles.body}>
         <View style={styles.profileBlock}>
-          <Image source={{ uri: avatarImages[0] }} style={styles.avatar} />
-          <Text style={[styles.name, { color: theme.colors.text }]}>Imane fh</Text>
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.avatar} />
+          ) : (
+            <View
+              style={[
+                styles.avatar,
+                { backgroundColor: theme.colors.surfaceMuted },
+              ]}
+            />
+          )}
+          <Text style={[styles.name, { color: theme.colors.text }]}>
+            {user?.name ?? ""}
+          </Text>
           <Text style={[styles.email, { color: theme.colors.textMuted }]}>
-            imanefh28@gmail.com
+            {user?.email ?? ""}
           </Text>
         </View>
 
@@ -64,19 +77,25 @@ export default function ProfileScreen() {
             <Text style={[styles.statLabel, { color: theme.colors.text }]}>
               {t("rewardPoints")}
             </Text>
-            <Text style={[styles.statValue, { color: theme.colors.primary }]}>50</Text>
+            <Text style={[styles.statValue, { color: theme.colors.primary }]}>
+              {user?.rewardPoints ?? 0}
+            </Text>
           </View>
           <View style={styles.stat}>
             <Text style={[styles.statLabel, { color: theme.colors.text }]}>
               {t("travelTrips")}
             </Text>
-            <Text style={[styles.statValue, { color: theme.colors.primary }]}>40</Text>
+            <Text style={[styles.statValue, { color: theme.colors.primary }]}>
+              {user?.travelTrips ?? 0}
+            </Text>
           </View>
           <View style={styles.stat}>
             <Text style={[styles.statLabel, { color: theme.colors.text }]}>
               {t("bucketList")}
             </Text>
-            <Text style={[styles.statValue, { color: theme.colors.primary }]}>200</Text>
+            <Text style={[styles.statValue, { color: theme.colors.primary }]}>
+              {user?.bucketList ?? 0}
+            </Text>
           </View>
         </View>
 

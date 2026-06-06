@@ -4,35 +4,54 @@ import { Ionicons } from "@expo/vector-icons";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { IconButton } from "@/src/components/common/IconButton";
 import { LanguageSwitcher } from "@/src/components/common/LanguageSwitcher";
+import { LoadingView } from "@/src/components/common/LoadingView";
 import { SearchBar } from "@/src/components/common/SearchBar";
 import { ThemeSwitcher } from "@/src/components/common/ThemeSwitcher";
 import { PlaceCard } from "@/src/components/cards/PlaceCard";
 import { TripPackageCard } from "@/src/components/cards/TripPackageCard";
 import { SectionHeader } from "@/src/components/sections/SectionHeader";
-import { avatarImages } from "@/src/data/travelData";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { usePlaces } from "@/src/hooks/usePlaces";
 import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
 import { spacing } from "@/src/theme";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
   const { theme } = useAppTheme();
   const { t } = useLocalization();
+  const { avatarImages, user } = useAppContext();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { popularPlaces, tripPackages } = usePlaces();
+  const { isDataLoading, popularPlaces, tripPackages } = usePlaces();
   const { navigate } = useNavigation();
+
+  if (isDataLoading && popularPlaces.length === 0) {
+    return <LoadingView />;
+  }
+
+  const avatarUri = user?.avatar ?? avatarImages[0];
 
   return (
     <AppScreen scroll contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View style={styles.profileRow}>
-          <Image source={{ uri: avatarImages[0] }} style={styles.avatar} />
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.avatar} />
+          ) : (
+            <View
+              style={[
+                styles.avatar,
+                { backgroundColor: theme.colors.surfaceMuted },
+              ]}
+            />
+          )}
           <View style={styles.greetingWrap}>
             <Text style={[styles.hello, { color: theme.colors.textMuted }]}>Hello,</Text>
-            <Text style={[styles.name, { color: theme.colors.text }]}>Imane</Text>
+            <Text style={[styles.name, { color: theme.colors.text }]}>
+              {user?.name ?? ""}
+            </Text>
           </View>
         </View>
         <IconButton

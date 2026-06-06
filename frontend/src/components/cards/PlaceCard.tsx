@@ -11,10 +11,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { AvatarStack } from "@/src/components/common/AvatarStack";
 import { RatingStars } from "@/src/components/common/RatingStars";
-import { avatarImages } from "@/src/data/travelData";
 import { formatCurrency } from "@/src/utils/format";
 import { radius, spacing } from "@/src/theme";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
+import { useAppContext } from "@/src/store/AppContext";
 import type { Place } from "@/src/types";
 
 type PlaceCardProps = {
@@ -35,6 +35,7 @@ export function PlaceCard({
   variant = "grid",
 }: PlaceCardProps) {
   const { theme } = useAppTheme();
+  const { avatarImages } = useAppContext();
   const isFeatured = variant === "featured";
 
   return (

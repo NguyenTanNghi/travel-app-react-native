@@ -5,9 +5,9 @@ import { EmptyState } from "@/src/components/common/EmptyState";
 import { NotificationCard } from "@/src/components/cards/NotificationCard";
 import { AppHeader } from "@/src/components/headers/AppHeader";
 import { SegmentedTabs } from "@/src/components/sections/SegmentedTabs";
-import { notifications } from "@/src/data/travelData";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useLocalization } from "@/src/hooks/useLocalization";
+import { useAppContext } from "@/src/store/AppContext";
 import { spacing } from "@/src/theme";
 import type { NotificationItem } from "@/src/types";
 
@@ -15,6 +15,7 @@ type NotificationStatus = NotificationItem["status"];
 
 export default function NotificationScreen() {
   const [activeStatus, setActiveStatus] = useState<NotificationStatus>("recent");
+  const { clearNotifications, notifications } = useAppContext();
   const { theme } = useAppTheme();
   const { t } = useLocalization();
   const filteredNotifications = notifications.filter(
@@ -26,7 +27,12 @@ export default function NotificationScreen() {
       <AppHeader
         title={t("notification")}
         right={
-          <TouchableOpacity activeOpacity={0.75}>
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={() => {
+              void clearNotifications(activeStatus).catch(() => {});
+            }}
+          >
             <Text style={[styles.clearText, { color: theme.colors.primary }]}>
               {t("clearAll")}
             </Text>

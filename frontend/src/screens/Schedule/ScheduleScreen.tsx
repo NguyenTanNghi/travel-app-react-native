@@ -6,12 +6,13 @@ import { ScheduleCard } from "@/src/components/cards/ScheduleCard";
 import { AppHeader } from "@/src/components/headers/AppHeader";
 import { CalendarStrip } from "@/src/components/sections/CalendarStrip";
 import { SectionHeader } from "@/src/components/sections/SectionHeader";
-import { scheduleItems } from "@/src/data/travelData";
 import { useLocalization } from "@/src/hooks/useLocalization";
 import { useNavigation } from "@/src/navigation/NavigationContext";
+import { useAppContext } from "@/src/store/AppContext";
 import { spacing } from "@/src/theme";
 
 export default function ScheduleScreen() {
+  const { scheduleItems } = useAppContext();
   const { t } = useLocalization();
   const { navigate } = useNavigation();
 
