@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import { CustomButton } from "@/src/components/buttons/CustomButton";
 import { AppScreen } from "@/src/components/common/AppScreen";
@@ -13,6 +13,7 @@ export default function VerificationScreen() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setSubmitting] = useState(false);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
   const { theme } = useAppTheme();
   const { t } = useLocalization();
   const { user, verifyOtp } = useAppContext();
@@ -26,9 +27,35 @@ export default function VerificationScreen() {
   }, [currentRoute.params?.email, replace]);
 
   const updateDigit = (value: string, index: number) => {
+    const nextValue = value.replace(/\D/g, "");
+
+    if (nextValue.length > 1) {
+      const nextCode = [...code];
+      const pastedDigits = nextValue.slice(0, code.length - index).split("");
+
+      pastedDigits.forEach((digit, offset) => {
+        nextCode[index + offset] = digit;
+      });
+
+      setCode(nextCode);
+      inputRefs.current[Math.min(index + pastedDigits.length, code.length - 1)]
+        ?.focus();
+      return;
+    }
+
     const nextCode = [...code];
-    nextCode[index] = value.slice(-1);
+    nextCode[index] = nextValue;
     setCode(nextCode);
+
+    if (nextValue && index < code.length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (key: string, index: number) => {
+    if (key === "Backspace" && !code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
   };
 
   const handleVerify = () => {
@@ -74,9 +101,15 @@ export default function VerificationScreen() {
         <View style={styles.codeRow}>
           {code.map((digit, index) => (
             <TextInput
-              key={`${digit}-${index}`}
+              key={`otp-${index}`}
+              ref={(input) => {
+                inputRefs.current[index] = input;
+              }}
               value={digit}
               onChangeText={(value) => updateDigit(value, index)}
+              onKeyPress={({ nativeEvent }) =>
+                handleKeyPress(nativeEvent.key, index)
+              }
               keyboardType="number-pad"
               maxLength={1}
               textAlign="center"
