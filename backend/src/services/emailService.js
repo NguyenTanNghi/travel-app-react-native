@@ -2,6 +2,8 @@ const dns = require("dns");
 const nodemailer = require("nodemailer");
 
 const DEFAULT_MAIL_TIMEOUT_MS = 12000;
+const DEFAULT_RESEND_FROM = "Travel App <onboarding@resend.dev>";
+const RESEND_EMAILS_URL = "https://api.resend.com/emails";
 
 try {
   dns.setDefaultResultOrder("ipv4first");
@@ -29,6 +31,18 @@ function getBoolean(value, fallback) {
   }
 
   return ["1", "true", "yes"].includes(String(value).trim().toLowerCase());
+}
+
+function getResendApiKey() {
+  return (
+    process.env.KEY_RESEND_VERIFICATION_EMAIL?.trim() ||
+    process.env.RESEND_API_KEY?.trim() ||
+    ""
+  );
+}
+
+function getResendFrom() {
+  return process.env.RESEND_FROM_EMAIL?.trim() || DEFAULT_RESEND_FROM;
 }
 
 function buildTransporter() {
@@ -110,7 +124,119 @@ function buildOtpMessage({ name, otp, purpose }) {
   return `${greeting}\n\nYour Travel App OTP is ${otp}. Use this code to ${action}.\n\nThis code should be kept private.`;
 }
 
-async function sendOtpEmail({ name, otp, purpose = "signup", to }) {
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function buildOtpHtmlMessage({ name, otp, purpose }) {
+  const greeting = name ? `Hi ${escapeHtml(name)},` : "Hi,";
+  const action =
+    purpose === "email_change"
+      ? "confirm your new email address"
+      : purpose === "password_reset"
+        ? "reset your password"
+        : "finish creating your account";
+
+  return `
+    <div style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
+      <p>${greeting}</p>
+      <p>Your Travel App OTP is:</p>
+      <p style="font-size: 28px; font-weight: 700; letter-spacing: 6px; margin: 16px 0;">${escapeHtml(otp)}</p>
+      <p>Use this code to ${escapeHtml(action)}.</p>
+      <p style="color: #6b7280; font-size: 13px;">This code should be kept private.</p>
+    </div>
+  `;
+}
+
+async function parseResendResponse(response) {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {
+      message: text,
+    };
+  }
+}
+
+async function sendOtpEmailWithResend({ name, otp, purpose, to }) {
+  const apiKey = getResendApiKey();
+
+  if (!apiKey) {
+    return {
+      reason: "missing_resend_key",
+      sent: false,
+    };
+  }
+
+  if (typeof fetch !== "function") {
+    return {
+      reason: "fetch_unavailable",
+      sent: false,
+    };
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), getMailTimeoutMs());
+
+  try {
+    const response = await fetch(RESEND_EMAILS_URL, {
+      body: JSON.stringify({
+        from: getResendFrom(),
+        html: buildOtpHtmlMessage({ name, otp, purpose }),
+        subject: buildOtpSubject(purpose),
+        text: buildOtpMessage({ name, otp, purpose }),
+        to: [to],
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      signal: controller.signal,
+    });
+    const payload = await parseResendResponse(response);
+
+    if (!response.ok) {
+      console.error(
+        "Unable to send OTP email with Resend:",
+        payload.message ?? payload.error ?? response.statusText,
+      );
+      return {
+        reason: "resend_send_failed",
+        sent: false,
+      };
+    }
+
+    return {
+      provider: "resend",
+      sent: true,
+    };
+  } catch (error) {
+    console.error(
+      "Unable to send OTP email with Resend:",
+      error instanceof Error ? error.message : error,
+    );
+    return {
+      reason: "resend_send_failed",
+      sent: false,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function sendOtpEmailWithSmtp({ name, otp, purpose, to }) {
   const transporter = buildTransporter();
   const from = (process.env.MAIL_FROM ?? process.env.MAIL_USERNAME)?.trim();
 
@@ -131,6 +257,7 @@ async function sendOtpEmail({ name, otp, purpose = "signup", to }) {
     });
 
     return {
+      provider: "smtp",
       sent: true,
     };
   } catch (error) {
@@ -140,6 +267,14 @@ async function sendOtpEmail({ name, otp, purpose = "signup", to }) {
       sent: false,
     };
   }
+}
+
+async function sendOtpEmail({ name, otp, purpose = "signup", to }) {
+  if (getResendApiKey()) {
+    return sendOtpEmailWithResend({ name, otp, purpose, to });
+  }
+
+  return sendOtpEmailWithSmtp({ name, otp, purpose, to });
 }
 
 module.exports = {
