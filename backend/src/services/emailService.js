@@ -1,6 +1,13 @@
+const dns = require("dns");
 const nodemailer = require("nodemailer");
 
 const DEFAULT_MAIL_TIMEOUT_MS = 12000;
+
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch {
+  // Older Node versions do not support changing DNS result order.
+}
 
 function getMailTimeoutMs() {
   const configuredTimeout = Number(process.env.MAIL_TIMEOUT_MS);
@@ -8,6 +15,20 @@ function getMailTimeoutMs() {
   return Number.isFinite(configuredTimeout) && configuredTimeout > 0
     ? configuredTimeout
     : DEFAULT_MAIL_TIMEOUT_MS;
+}
+
+function getPositiveNumber(value, fallback) {
+  const number = Number(value);
+
+  return Number.isFinite(number) && number > 0 ? number : fallback;
+}
+
+function getBoolean(value, fallback) {
+  if (value === undefined) {
+    return fallback;
+  }
+
+  return ["1", "true", "yes"].includes(String(value).trim().toLowerCase());
 }
 
 function buildTransporter() {
@@ -23,15 +44,45 @@ function buildTransporter() {
     return null;
   }
 
-  return nodemailer.createTransport({
+  const isGmail = service.toLowerCase() === "gmail";
+  const host =
+    process.env.MAIL_HOST?.trim() || (isGmail ? "smtp.gmail.com" : "");
+  const port = getPositiveNumber(
+    process.env.MAIL_PORT,
+    isGmail ? 587 : 465,
+  );
+  const secure = getBoolean(process.env.MAIL_SECURE, port === 465);
+  const dnsFamily = getPositiveNumber(process.env.MAIL_DNS_FAMILY, 4);
+  const baseOptions = {
     auth: {
       pass,
       user,
     },
     connectionTimeout: getMailTimeoutMs(),
     greetingTimeout: getMailTimeoutMs(),
-    service,
     socketTimeout: getMailTimeoutMs(),
+  };
+
+  if (dnsFamily === 4 || dnsFamily === 6) {
+    baseOptions.family = dnsFamily;
+  }
+
+  if (host) {
+    return nodemailer.createTransport({
+      ...baseOptions,
+      host,
+      port,
+      requireTLS: getBoolean(process.env.MAIL_REQUIRE_TLS, !secure),
+      secure,
+      tls: {
+        servername: host,
+      },
+    });
+  }
+
+  return nodemailer.createTransport({
+    ...baseOptions,
+    service,
   });
 }
 
