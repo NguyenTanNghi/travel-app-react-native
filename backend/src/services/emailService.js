@@ -11,8 +11,13 @@ function getMailTimeoutMs() {
 }
 
 function buildTransporter() {
-  const user = process.env.MAIL_USERNAME;
-  const pass = process.env.MAIL_PASSWORD;
+  const service = String(process.env.MAIL_SERVICE ?? "gmail").trim();
+  const user = process.env.MAIL_USERNAME?.trim();
+  const rawPassword = process.env.MAIL_PASSWORD ?? "";
+  const pass =
+    service.toLowerCase() === "gmail"
+      ? rawPassword.replace(/\s/g, "")
+      : rawPassword.trim();
 
   if (!user || !pass) {
     return null;
@@ -25,7 +30,7 @@ function buildTransporter() {
     },
     connectionTimeout: getMailTimeoutMs(),
     greetingTimeout: getMailTimeoutMs(),
-    service: process.env.MAIL_SERVICE ?? "gmail",
+    service,
     socketTimeout: getMailTimeoutMs(),
   });
 }
@@ -56,6 +61,7 @@ function buildOtpMessage({ name, otp, purpose }) {
 
 async function sendOtpEmail({ name, otp, purpose = "signup", to }) {
   const transporter = buildTransporter();
+  const from = (process.env.MAIL_FROM ?? process.env.MAIL_USERNAME)?.trim();
 
   if (!transporter) {
     console.warn("MAIL_USERNAME or MAIL_PASSWORD is missing. OTP email was not sent.");
@@ -67,7 +73,7 @@ async function sendOtpEmail({ name, otp, purpose = "signup", to }) {
 
   try {
     await transporter.sendMail({
-      from: process.env.MAIL_FROM ?? process.env.MAIL_USERNAME,
+      from,
       subject: buildOtpSubject(purpose),
       text: buildOtpMessage({ name, otp, purpose }),
       to,
