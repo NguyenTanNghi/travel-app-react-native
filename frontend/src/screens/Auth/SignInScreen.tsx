@@ -12,8 +12,8 @@ import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 
 export default function SignInScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("imanefh28@gmail.com");
+  const [password, setPassword] = useState("travelapp");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setSubmitting] = useState(false);
   const { theme } = useAppTheme();

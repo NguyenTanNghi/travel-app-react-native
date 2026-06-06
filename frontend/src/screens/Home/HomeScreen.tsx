@@ -18,6 +18,8 @@ import { useNavigation } from "@/src/navigation/NavigationContext";
 import { useAppContext } from "@/src/store/AppContext";
 import { spacing } from "@/src/theme";
 
+const SCREEN_SIDE_GUTTER = spacing.xl;
+
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
   const { theme } = useAppTheme();
@@ -68,11 +70,13 @@ export default function HomeScreen() {
         <Ionicons name="airplane" size={20} color={theme.colors.primary} />
       </View>
 
-      <SearchBar
-        value={search}
-        onChangeText={setSearch}
-        placeholder={t("searchPlaces")}
-      />
+      <View style={styles.searchWrap}>
+        <SearchBar
+          value={search}
+          onChangeText={setSearch}
+          placeholder={t("searchPlaces")}
+        />
+      </View>
 
       <View style={styles.switchers}>
         <ThemeSwitcher />
@@ -80,11 +84,13 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.section}>
-        <SectionHeader
-          title={t("bestDestination")}
-          actionLabel={t("viewAll")}
-          onActionPress={() => navigate("PopularPlaces")}
-        />
+        <View style={styles.sectionHeaderWrap}>
+          <SectionHeader
+            title={t("bestDestination")}
+            actionLabel={t("viewAll")}
+            onActionPress={() => navigate("PopularPlaces")}
+          />
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -104,18 +110,22 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.section}>
-        <SectionHeader
-          title={t("popularPackages")}
-          actionLabel={t("viewAll")}
-          onActionPress={() => navigate("AllPopularTripPackage")}
-        />
-        {tripPackages.slice(0, 2).map((item) => (
-          <TripPackageCard
-            key={item.id}
-            tripPackage={item}
-            onPress={() => navigate("Details", { placeId: item.placeId })}
+        <View style={styles.sectionHeaderWrap}>
+          <SectionHeader
+            title={t("popularPackages")}
+            actionLabel={t("viewAll")}
+            onActionPress={() => navigate("AllPopularTripPackage")}
           />
-        ))}
+        </View>
+        <View style={styles.packageList}>
+          {tripPackages.slice(0, 2).map((item) => (
+            <TripPackageCard
+              key={item.id}
+              tripPackage={item}
+              onPress={() => navigate("Details", { placeId: item.placeId })}
+            />
+          ))}
+        </View>
       </View>
 
       <TouchableOpacity
@@ -150,7 +160,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: SCREEN_SIDE_GUTTER,
   },
   hello: {
     fontSize: 12,
@@ -167,11 +177,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: SCREEN_SIDE_GUTTER,
   },
   horizontalList: {
-    paddingLeft: spacing.lg,
-    paddingRight: spacing.xs,
+    paddingLeft: SCREEN_SIDE_GUTTER,
+    paddingRight: spacing.sm,
   },
   name: {
     fontSize: 16,
@@ -180,6 +190,12 @@ const styles = StyleSheet.create({
   profileRow: {
     alignItems: "center",
     flexDirection: "row",
+  },
+  packageList: {
+    paddingHorizontal: SCREEN_SIDE_GUTTER,
+  },
+  searchWrap: {
+    paddingHorizontal: SCREEN_SIDE_GUTTER,
   },
   searchShortcut: {
     alignItems: "center",
@@ -198,11 +214,14 @@ const styles = StyleSheet.create({
   section: {
     marginTop: spacing.xl,
   },
+  sectionHeaderWrap: {
+    paddingHorizontal: SCREEN_SIDE_GUTTER,
+  },
   switchers: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: spacing.md,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: SCREEN_SIDE_GUTTER,
   },
 });
