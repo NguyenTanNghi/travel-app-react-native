@@ -1,9 +1,9 @@
 const dns = require("dns");
 const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 const DEFAULT_MAIL_TIMEOUT_MS = 12000;
-const DEFAULT_RESEND_FROM = "Travel App <onboarding@resend.dev>";
-const RESEND_EMAILS_URL = "https://api.resend.com/emails";
+const DEFAULT_RESEND_FROM = "onboarding@resend.dev";
 
 try {
   dns.setDefaultResultOrder("ipv4first");
@@ -153,22 +153,6 @@ function buildOtpHtmlMessage({ name, otp, purpose }) {
   `;
 }
 
-async function parseResendResponse(response) {
-  const text = await response.text();
-
-  if (!text) {
-    return {};
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return {
-      message: text,
-    };
-  }
-}
-
 async function sendOtpEmailWithResend({ name, otp, purpose, to }) {
   const apiKey = getResendApiKey();
 
@@ -179,38 +163,25 @@ async function sendOtpEmailWithResend({ name, otp, purpose, to }) {
     };
   }
 
-  if (typeof fetch !== "function") {
-    return {
-      reason: "fetch_unavailable",
-      sent: false,
-    };
-  }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), getMailTimeoutMs());
+  const resend = new Resend(apiKey);
 
   try {
-    const response = await fetch(RESEND_EMAILS_URL, {
-      body: JSON.stringify({
-        from: getResendFrom(),
-        html: buildOtpHtmlMessage({ name, otp, purpose }),
-        subject: buildOtpSubject(purpose),
-        text: buildOtpMessage({ name, otp, purpose }),
-        to: [to],
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      signal: controller.signal,
+    const { data, error } = await resend.emails.send({
+      from: getResendFrom(),
+      html: buildOtpHtmlMessage({ name, otp, purpose }),
+      subject: buildOtpSubject(purpose),
+      text: buildOtpMessage({ name, otp, purpose }),
+      to,
     });
-    const payload = await parseResendResponse(response);
 
-    if (!response.ok) {
+    if (error) {
       console.error(
         "Unable to send OTP email with Resend:",
-        payload.message ?? payload.error ?? response.statusText,
+        JSON.stringify({
+          message: error.message,
+          name: error.name,
+          statusCode: error.statusCode,
+        }),
       );
       return {
         reason: "resend_send_failed",
@@ -219,6 +190,7 @@ async function sendOtpEmailWithResend({ name, otp, purpose, to }) {
     }
 
     return {
+      id: data?.id,
       provider: "resend",
       sent: true,
     };
@@ -231,8 +203,6 @@ async function sendOtpEmailWithResend({ name, otp, purpose, to }) {
       reason: "resend_send_failed",
       sent: false,
     };
-  } finally {
-    clearTimeout(timeout);
   }
 }
 
