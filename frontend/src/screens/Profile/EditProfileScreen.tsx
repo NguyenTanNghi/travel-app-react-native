@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import {
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { CustomButton } from "@/src/components/buttons/CustomButton";
 import { AppScreen } from "@/src/components/common/AppScreen";
 import { AppInput } from "@/src/components/inputs/AppInput";
 import { AppHeader } from "@/src/components/headers/AppHeader";
@@ -9,19 +19,34 @@ import { useNavigation } from "@/src/navigation/NavigationContext";
 import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 
+const MAX_AVATAR_LENGTH = 4_500_000;
+
+function isValidImageUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export default function EditProfileScreen() {
+  const [avatar, setAvatar] = useState("");
+  const [avatarError, setAvatarError] = useState("");
+  const [avatarUrlInput, setAvatarUrlInput] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [location, setLocation] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isAvatarModalVisible, setAvatarModalVisible] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const { theme } = useAppTheme();
   const { t } = useLocalization();
   const { avatarImages, updateProfile, user } = useAppContext();
   const { goBack, replace } = useNavigation();
-  const profileAvatar = user?.avatar ?? avatarImages[0];
+  const profileAvatar = avatar || avatarImages[0];
   const profileName = user?.name ?? "";
 
   useEffect(() => {
@@ -34,7 +59,79 @@ export default function EditProfileScreen() {
     setEmail(user.email);
     setLocation(user.location);
     setMobileNumber(user.mobileNumber);
+    setAvatar(user.avatar ?? "");
+    setAvatarUrlInput(
+      user.avatar?.startsWith("http") ? user.avatar : "",
+    );
   }, [user]);
+
+  const handlePickAvatar = async () => {
+    setAvatarError("");
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      setAvatarError(t("photoPermissionDenied"));
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      base64: true,
+      mediaTypes: ["images"],
+      quality: 0.35,
+    });
+
+    if (result.canceled) {
+      return;
+    }
+
+    const selectedAsset = result.assets[0];
+
+    if (!selectedAsset) {
+      return;
+    }
+
+    const nextAvatar = selectedAsset.base64
+      ? `data:${selectedAsset.mimeType ?? "image/jpeg"};base64,${selectedAsset.base64}`
+      : selectedAsset.uri;
+
+    if (nextAvatar.length > MAX_AVATAR_LENGTH) {
+      setAvatarError(t("imageTooLarge"));
+      return;
+    }
+
+    setAvatar(nextAvatar);
+    setAvatarUrlInput("");
+    setAvatarModalVisible(false);
+  };
+
+  const handleUseAvatarUrl = () => {
+    const nextAvatar = avatarUrlInput.trim();
+
+    setAvatarError("");
+
+    if (!nextAvatar) {
+      setAvatarError(t("imageUrlRequired"));
+      return;
+    }
+
+    if (!isValidImageUrl(nextAvatar)) {
+      setAvatarError(t("invalidImageUrl"));
+      return;
+    }
+
+    setAvatar(nextAvatar);
+    setAvatarModalVisible(false);
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatar("");
+    setAvatarUrlInput("");
+    setAvatarError("");
+    setAvatarModalVisible(false);
+  };
 
   const handleDone = () => {
     setErrorMessage("");
@@ -45,6 +142,7 @@ export default function EditProfileScreen() {
     );
 
     void updateProfile({
+      avatar,
       email,
       firstName,
       lastName,
@@ -103,7 +201,14 @@ export default function EditProfileScreen() {
           <Text style={[styles.name, { color: theme.colors.text }]}>
             {profileName}
           </Text>
-          <TouchableOpacity activeOpacity={0.75}>
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={() => {
+              setAvatarError("");
+              setAvatarUrlInput(avatar.startsWith("http") ? avatar : "");
+              setAvatarModalVisible(true);
+            }}
+          >
             <Text style={[styles.changePhoto, { color: theme.colors.primary }]}>
               {t("changeProfilePicture")}
             </Text>
@@ -154,6 +259,89 @@ export default function EditProfileScreen() {
           </Text>
         ) : null}
       </View>
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isAvatarModalVisible}
+        onRequestClose={() => setAvatarModalVisible(false)}
+      >
+        <View style={[styles.modalOverlay, { backgroundColor: theme.colors.overlay }]}>
+          <View style={[styles.modalPanel, { backgroundColor: theme.colors.surfaceRaised }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+                {t("profilePhoto")}
+              </Text>
+              <TouchableOpacity
+                accessibilityLabel="Close"
+                activeOpacity={0.75}
+                onPress={() => setAvatarModalVisible(false)}
+                style={[styles.closeButton, { backgroundColor: theme.colors.surfaceMuted }]}
+              >
+                <Ionicons name="close" size={18} color={theme.colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            {profileAvatar ? (
+              <Image source={{ uri: profileAvatar }} style={styles.avatarPreview} />
+            ) : (
+              <View
+                style={[
+                  styles.avatarPreview,
+                  { backgroundColor: theme.colors.surfaceMuted },
+                ]}
+              />
+            )}
+
+            <View style={styles.photoActionRow}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handlePickAvatar}
+                style={[styles.photoAction, { backgroundColor: theme.colors.surfaceMuted }]}
+              >
+                <Ionicons name="image-outline" size={18} color={theme.colors.primary} />
+                <Text style={[styles.photoActionText, { color: theme.colors.text }]}>
+                  {t("uploadPhoto")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleRemoveAvatar}
+                style={[styles.photoAction, { backgroundColor: theme.colors.surfaceMuted }]}
+              >
+                <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
+                <Text style={[styles.photoActionText, { color: theme.colors.text }]}>
+                  {t("removePhoto")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <AppInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              containerStyle={styles.urlField}
+              keyboardType="url"
+              label={t("imageUrl")}
+              leftIcon="link-outline"
+              onChangeText={setAvatarUrlInput}
+              placeholder={t("pasteImageUrl")}
+              value={avatarUrlInput}
+            />
+
+            {avatarError ? (
+              <Text style={[styles.error, { color: theme.colors.danger }]}>
+                {avatarError}
+              </Text>
+            ) : null}
+
+            <CustomButton
+              icon="link-outline"
+              onPress={handleUseAvatarUrl}
+              title={t("useImageUrl")}
+              style={styles.urlButton}
+            />
+          </View>
+        </View>
+      </Modal>
     </AppScreen>
   );
 }
@@ -163,6 +351,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     height: 88,
     width: 88,
+  },
+  avatarPreview: {
+    alignSelf: "center",
+    borderRadius: radius.pill,
+    height: 104,
+    marginBottom: spacing.lg,
+    width: 104,
   },
   body: {
     paddingHorizontal: spacing.lg,
@@ -179,6 +374,13 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: spacing.sm,
   },
+  closeButton: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    height: 34,
+    justifyContent: "center",
+    width: 34,
+  },
   done: {
     fontSize: 13,
     fontWeight: "800",
@@ -191,6 +393,25 @@ const styles = StyleSheet.create({
   field: {
     marginBottom: spacing.md,
   },
+  modalHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: spacing.lg,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  modalPanel: {
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+  },
   name: {
     fontSize: 18,
     fontWeight: "800",
@@ -200,5 +421,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: spacing.xl,
     marginTop: spacing.md,
+  },
+  photoAction: {
+    alignItems: "center",
+    borderRadius: radius.md,
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    minHeight: 46,
+    paddingHorizontal: spacing.sm,
+  },
+  photoActionRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  photoActionText: {
+    fontSize: 13,
+    fontWeight: "800",
+    marginLeft: spacing.xs,
+  },
+  urlButton: {
+    marginTop: spacing.lg,
+  },
+  urlField: {
+    marginTop: spacing.xs,
   },
 });

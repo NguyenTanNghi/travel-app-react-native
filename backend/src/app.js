@@ -28,7 +28,7 @@ function createCorsOptions() {
 const app = express();
 
 app.use(cors(createCorsOptions()));
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "8mb" }));
 
 app.get("/api/health", (req, res) => {
   res.json({
