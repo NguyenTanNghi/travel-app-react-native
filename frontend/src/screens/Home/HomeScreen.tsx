@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppScreen } from "@/src/components/common/AppScreen";
+import { EmptyState } from "@/src/components/common/EmptyState";
 import { IconButton } from "@/src/components/common/IconButton";
 import { LanguageSwitcher } from "@/src/components/common/LanguageSwitcher";
 import { LoadingView } from "@/src/components/common/LoadingView";
@@ -26,7 +27,7 @@ export default function HomeScreen() {
   const { t } = useLocalization();
   const { avatarImages, user } = useAppContext();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { isDataLoading, popularPlaces, tripPackages } = usePlaces();
+  const { isDataLoading, popularPlaces, searchPlaces, tripPackages } = usePlaces();
   const { navigate } = useNavigation();
 
   if (isDataLoading && popularPlaces.length === 0) {
@@ -34,6 +35,9 @@ export default function HomeScreen() {
   }
 
   const avatarUri = user?.avatar ?? avatarImages[0];
+  const normalizedSearch = search.trim();
+  const searchResults = normalizedSearch ? searchPlaces(normalizedSearch) : [];
+  const isSearching = normalizedSearch.length > 0;
 
   return (
     <AppScreen scroll contentContainerStyle={styles.content}>
@@ -83,6 +87,37 @@ export default function HomeScreen() {
         <LanguageSwitcher />
       </View>
 
+      {isSearching ? (
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderWrap}>
+            <SectionHeader title={t("searchPlaces")} />
+          </View>
+          {searchResults.length === 0 ? (
+            <View style={styles.emptySearchWrap}>
+              <EmptyState
+                title={t("noResults")}
+                message={t("noResultsMessage")}
+              />
+            </View>
+          ) : (
+            <View style={styles.searchResultsGrid}>
+              {searchResults.slice(0, 6).map((place) => (
+                <View key={place.id} style={styles.searchResultItem}>
+                  <PlaceCard
+                    place={place}
+                    isFavorite={isFavorite(place.id)}
+                    onToggleFavorite={() => toggleFavorite(place.id)}
+                    onPress={() => navigate("Details", { placeId: place.id })}
+                    onReadMore={() => navigate("Details", { placeId: place.id })}
+                    readMoreLabel={t("readMore")}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      ) : null}
+
       <View style={styles.section}>
         <View style={styles.sectionHeaderWrap}>
           <SectionHeader
@@ -104,6 +139,8 @@ export default function HomeScreen() {
               isFavorite={isFavorite(place.id)}
               onToggleFavorite={() => toggleFavorite(place.id)}
               onPress={() => navigate("Details", { placeId: place.id })}
+              onReadMore={() => navigate("Details", { placeId: place.id })}
+              readMoreLabel={t("readMore")}
             />
           ))}
         </ScrollView>
@@ -123,6 +160,8 @@ export default function HomeScreen() {
               key={item.id}
               tripPackage={item}
               onPress={() => navigate("Details", { placeId: item.placeId })}
+              onReadMore={() => navigate("Details", { placeId: item.placeId })}
+              readMoreLabel={t("readMore")}
             />
           ))}
         </View>
@@ -183,6 +222,9 @@ const styles = StyleSheet.create({
     paddingLeft: SCREEN_SIDE_GUTTER,
     paddingRight: spacing.sm,
   },
+  emptySearchWrap: {
+    paddingHorizontal: SCREEN_SIDE_GUTTER,
+  },
   name: {
     fontSize: 16,
     fontWeight: "800",
@@ -210,6 +252,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     marginLeft: spacing.xs,
+  },
+  searchResultsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: SCREEN_SIDE_GUTTER,
+  },
+  searchResultItem: {
+    marginBottom: spacing.md,
+    width: "48%",
   },
   section: {
     marginTop: spacing.xl,

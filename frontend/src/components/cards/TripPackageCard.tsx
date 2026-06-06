@@ -13,12 +13,20 @@ import type { TripPackage } from "@/src/types";
 type TripPackageCardProps = {
   tripPackage: TripPackage;
   onPress?: () => void;
+  onReadMore?: () => void;
+  readMoreLabel?: string;
 };
 
-export function TripPackageCard({ onPress, tripPackage }: TripPackageCardProps) {
+export function TripPackageCard({
+  onPress,
+  onReadMore,
+  readMoreLabel,
+  tripPackage,
+}: TripPackageCardProps) {
   const { theme } = useAppTheme();
   const { t } = useLocalization();
   const { avatarImages } = useAppContext();
+  const handleReadMore = onReadMore ?? onPress;
 
   return (
     <TouchableOpacity
@@ -59,6 +67,22 @@ export function TripPackageCard({ onPress, tripPackage }: TripPackageCardProps) 
           <Text style={[styles.meta, { color: theme.colors.textMuted }]}>
             {tripPackage.joined} {t("person")} {t("joined")}
           </Text>
+          {readMoreLabel ? (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleReadMore}
+              style={[styles.readMoreButton, { backgroundColor: theme.colors.primarySoft }]}
+            >
+              <Text style={[styles.readMoreText, { color: theme.colors.primary }]}>
+                {readMoreLabel}
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={11}
+                color={theme.colors.primary}
+              />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </View>
     </TouchableOpacity>
@@ -109,6 +133,18 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 12,
     fontWeight: "800",
+  },
+  readMoreButton: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    flexDirection: "row",
+    minHeight: 24,
+    paddingHorizontal: spacing.xs,
+  },
+  readMoreText: {
+    fontSize: 11,
+    fontWeight: "800",
+    marginRight: spacing.xxs,
   },
   title: {
     flex: 1,

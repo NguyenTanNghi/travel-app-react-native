@@ -64,6 +64,7 @@ const vi: typeof en = {
   notification: "Thông báo",
   clearAll: "Xóa tất cả",
   recent: "Gần đây",
+  readMore: "Đọc thêm",
   earlier: "Trước đó",
   archived: "Đã lưu trữ",
   aiChat: "AI Chat",

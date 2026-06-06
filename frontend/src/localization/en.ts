@@ -62,6 +62,7 @@ const en = {
   notification: "Notification",
   clearAll: "Clear all",
   recent: "Recent",
+  readMore: "Read More",
   earlier: "Earlier",
   archived: "Archived",
   aiChat: "AI Chat",

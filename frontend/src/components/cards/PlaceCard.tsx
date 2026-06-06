@@ -21,7 +21,9 @@ type PlaceCardProps = {
   place: Place;
   isFavorite?: boolean;
   onPress?: () => void;
+  onReadMore?: () => void;
   onToggleFavorite?: () => void;
+  readMoreLabel?: string;
   variant?: "featured" | "grid" | "compact";
   style?: StyleProp<ViewStyle>;
 };
@@ -29,14 +31,17 @@ type PlaceCardProps = {
 export function PlaceCard({
   isFavorite = false,
   onPress,
+  onReadMore,
   onToggleFavorite,
   place,
+  readMoreLabel,
   style,
   variant = "grid",
 }: PlaceCardProps) {
   const { theme } = useAppTheme();
   const { avatarImages } = useAppContext();
   const isFeatured = variant === "featured";
+  const handleReadMore = onReadMore ?? onPress;
 
   return (
     <TouchableOpacity
@@ -117,6 +122,22 @@ export function PlaceCard({
             </Text>
           </View>
         )}
+        {readMoreLabel ? (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handleReadMore}
+            style={[styles.readMoreButton, { backgroundColor: theme.colors.primarySoft }]}
+          >
+            <Text style={[styles.readMoreText, { color: theme.colors.primary }]}>
+              {readMoreLabel}
+            </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={11}
+              color={theme.colors.primary}
+            />
+          </TouchableOpacity>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
@@ -191,6 +212,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     marginTop: spacing.xs,
+  },
+  readMoreButton: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    borderRadius: radius.pill,
+    flexDirection: "row",
+    marginTop: spacing.sm,
+    minHeight: 24,
+    paddingHorizontal: spacing.xs,
+  },
+  readMoreText: {
+    fontSize: 11,
+    fontWeight: "800",
+    marginRight: spacing.xxs,
   },
   ratingValue: {
     fontSize: 14,
