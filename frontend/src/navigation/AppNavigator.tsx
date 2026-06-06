@@ -14,6 +14,7 @@ import OnboardingScreen from "@/src/screens/Onboarding/OnboardingScreen";
 import SplashScreen from "@/src/screens/Onboarding/SplashScreen";
 import AllPopularTripPackageScreen from "@/src/screens/PopularPlaces/AllPopularTripPackageScreen";
 import PopularPlacesScreen from "@/src/screens/PopularPlaces/PopularPlacesScreen";
+import ContactPolicyScreen from "@/src/screens/Profile/ContactPolicyScreen";
 import EditProfileScreen from "@/src/screens/Profile/EditProfileScreen";
 import ProfileScreen from "@/src/screens/Profile/ProfileScreen";
 import VerificationScreen from "@/src/screens/Profile/VerificationScreen";
@@ -103,6 +104,8 @@ export default function AppNavigator() {
       );
     case "EditProfile":
       return <EditProfileScreen />;
+    case "ContactPolicy":
+      return <ContactPolicyScreen />;
     case "Verification":
       return <VerificationScreen />;
     default:

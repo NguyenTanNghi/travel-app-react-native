@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -73,18 +73,11 @@ function RecommendedPlaceCard({
 export default function AiChatScreen() {
   const [draft, setDraft] = useState("");
   const [isThinking, setThinking] = useState(false);
-  const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const scrollRef = useRef<ScrollView>(null);
   const { theme } = useAppTheme();
   const { language, t } = useLocalization();
   const { navigate } = useNavigation();
-  const { aiChatStarterMessages } = useAppContext();
-
-  useEffect(() => {
-    if (messages.length === 0 && aiChatStarterMessages.length > 0) {
-      setMessages(aiChatStarterMessages);
-    }
-  }, [aiChatStarterMessages, messages.length]);
+  const { aiChatMessages: messages, setAiChatMessages } = useAppContext();
 
   const quickPrompts = [
     t("aiQuickBeach"),
@@ -108,7 +101,7 @@ export default function AiChatScreen() {
       time,
     };
 
-    setMessages((current) => [...current, userMessage]);
+    setAiChatMessages((current) => [...current, userMessage]);
     setDraft("");
     setThinking(true);
 
@@ -126,7 +119,7 @@ export default function AiChatScreen() {
             time: getCurrentTime(),
           };
 
-          setMessages((current) => [...current, assistantMessage]);
+          setAiChatMessages((current) => [...current, assistantMessage]);
           requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
         })
         .finally(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import { CustomButton } from "@/src/components/buttons/CustomButton";
 import { AppScreen } from "@/src/components/common/AppScreen";
@@ -18,6 +18,12 @@ export default function VerificationScreen() {
   const { user, verifyOtp } = useAppContext();
   const { currentRoute, goBack, replace } = useNavigation();
   const verificationEmail = currentRoute.params?.email ?? user?.email ?? "";
+
+  useEffect(() => {
+    if (!currentRoute.params?.email) {
+      replace("SignIn");
+    }
+  }, [currentRoute.params?.email, replace]);
 
   const updateDigit = (value: string, index: number) => {
     const nextCode = [...code];

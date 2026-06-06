@@ -28,6 +28,7 @@ export type RouteName =
   | "AiChat"
   | "Profile"
   | "EditProfile"
+  | "ContactPolicy"
   | "Verification";
 
 export type RouteParams = {

@@ -94,7 +94,16 @@ const vi: typeof en = {
   bucketList: "Bucket List",
   bookmarked: "Đã lưu",
   previousTrips: "Chuyến đi trước",
-  settings: "Cài đặt",
+  contactAndPolicy: "Liên hệ & chính sách",
+  contactInfo: "Thông tin liên hệ",
+  logout: "Đăng xuất",
+  privacyPolicy: "Chính sách bảo mật",
+  privacyPolicyText:
+    "Chúng tôi chỉ thu thập thông tin cần thiết để cung cấp tài khoản, đặt chuyến, địa điểm yêu thích và trợ lý du lịch. Thông tin liên hệ được dùng cho xác thực, hỗ trợ và cập nhật chuyến đi.",
+  socialNetworks: "Mạng xã hội",
+  termsOfUse: "Điều khoản sử dụng",
+  termsOfUseText:
+    "Khi sử dụng Travel Explorer, bạn đồng ý cung cấp thông tin đặt chỗ chính xác, tuân thủ quy tắc dịch vụ và xem gợi ý AI như thông tin tham khảo du lịch.",
   verification: "Xác thực",
   version: "Phiên bản",
   done: "Xong",

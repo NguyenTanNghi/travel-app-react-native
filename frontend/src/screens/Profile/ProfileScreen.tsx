@@ -19,8 +19,8 @@ type ProfileMenuItem = {
 export default function ProfileScreen() {
   const { theme } = useAppTheme();
   const { t } = useLocalization();
-  const { avatarImages, user } = useAppContext();
-  const { navigate } = useNavigation();
+  const { avatarImages, signOut, user } = useAppContext();
+  const { navigate, replace } = useNavigation();
   const avatarUri = user?.avatar ?? avatarImages[0];
 
   const menuItems: ProfileMenuItem[] = [
@@ -35,8 +35,19 @@ export default function ProfileScreen() {
       label: t("previousTrips"),
       onPress: () => navigate("Bookings"),
     },
-    { icon: "settings-outline", label: t("settings") },
-    { icon: "shield-checkmark-outline", label: t("verification"), onPress: () => navigate("Verification") },
+    {
+      icon: "shield-checkmark-outline",
+      label: t("contactAndPolicy"),
+      onPress: () => navigate("ContactPolicy"),
+    },
+    {
+      icon: "log-out-outline",
+      label: t("logout"),
+      onPress: () => {
+        signOut();
+        replace("SignIn");
+      },
+    },
   ];
 
   return (
@@ -107,11 +118,35 @@ export default function ProfileScreen() {
               onPress={item.onPress}
               style={styles.menuItem}
             >
-              <Ionicons name={item.icon} size={18} color={theme.colors.icon} />
-              <Text style={[styles.menuLabel, { color: theme.colors.text }]}>
+              <Ionicons
+                name={item.icon}
+                size={18}
+                color={
+                  item.icon === "log-out-outline"
+                    ? theme.colors.danger
+                    : theme.colors.icon
+                }
+              />
+              <Text
+                style={[
+                  styles.menuLabel,
+                  {
+                    color:
+                      item.icon === "log-out-outline"
+                        ? theme.colors.danger
+                        : theme.colors.text,
+                  },
+                ]}
+              >
                 {item.label}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color={theme.colors.icon} />
+              {item.icon === "log-out-outline" ? null : (
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={theme.colors.icon}
+                />
+              )}
             </TouchableOpacity>
           ))}
         </View>

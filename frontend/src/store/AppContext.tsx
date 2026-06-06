@@ -58,6 +58,7 @@ type AppContextValue = {
   themeMode: ThemeMode;
   language: LanguageCode;
   isDataLoading: boolean;
+  aiChatMessages: AiChatMessage[];
   aiChatStarterMessages: AiChatMessage[];
   avatarImages: string[];
   notifications: NotificationItem[];
@@ -74,7 +75,9 @@ type AppContextValue = {
   forgotPassword: (email: string) => Promise<void>;
   refreshBookings: () => Promise<void>;
   refreshTravelData: () => Promise<void>;
+  setAiChatMessages: React.Dispatch<React.SetStateAction<AiChatMessage[]>>;
   setThemeMode: (mode: ThemeMode) => void;
+  signOut: () => void;
   signIn: (credentials: AuthCredentials) => Promise<void>;
   signUp: (payload: SignUpPayload) => Promise<void>;
   toggleTheme: () => void;
@@ -94,6 +97,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [isDataLoading, setDataLoading] = useState(true);
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [language, setLanguage] = useState<LanguageCode>("en");
+  const [aiChatMessages, setAiChatMessages] = useState<AiChatMessage[]>([]);
   const [aiChatStarterMessages, setAiChatStarterMessages] = useState<
     AiChatMessage[]
   >([]);
@@ -147,6 +151,9 @@ export function AppProvider({ children }: PropsWithChildren) {
       ]);
 
       setAiChatStarterMessages(appContent.aiChatStarterMessages);
+      setAiChatMessages((current) =>
+        current.length === 0 ? appContent.aiChatStarterMessages : current,
+      );
       setAvatarImages(appContent.avatarImages);
       setNotifications(nextNotifications);
       setOnboardingSlides(appContent.onboardingSlides);
@@ -215,6 +222,15 @@ export function AppProvider({ children }: PropsWithChildren) {
     },
     [applyAuthenticatedUser],
   );
+
+  const signOut = useCallback(() => {
+    setApiToken(null);
+    setApiAuthToken(null);
+    setUser(null);
+    setFavoritePlaceIds([]);
+    setBookings([]);
+    setAiChatMessages(aiChatStarterMessages);
+  }, [aiChatStarterMessages]);
 
   const forgotPassword = useCallback(async (email: string) => {
     await travelApi.forgotPassword(email);
@@ -291,6 +307,7 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   const value = useMemo(
     () => ({
+      aiChatMessages,
       aiChatStarterMessages,
       apiToken,
       bookingError,
@@ -311,8 +328,10 @@ export function AppProvider({ children }: PropsWithChildren) {
       places,
       refreshBookings,
       refreshTravelData,
+      setAiChatMessages,
       setThemeMode,
       signIn,
+      signOut,
       signUp,
       toggleTheme,
       setLanguage,
@@ -325,6 +344,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       t,
     }),
     [
+      aiChatMessages,
       aiChatStarterMessages,
       apiToken,
       bookingError,
@@ -345,6 +365,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       refreshBookings,
       refreshTravelData,
       signIn,
+      signOut,
       signUp,
       t,
       theme,

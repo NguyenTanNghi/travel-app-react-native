@@ -92,7 +92,16 @@ const en = {
   bucketList: "Bucket List",
   bookmarked: "Bookmarked",
   previousTrips: "Previous Trips",
-  settings: "Settings",
+  contactAndPolicy: "Contact & Policy",
+  contactInfo: "Contact Information",
+  logout: "Logout",
+  privacyPolicy: "Privacy Policy",
+  privacyPolicyText:
+    "We only collect information needed to provide account, booking, favorite place, and travel assistant features. Your contact information is used for authentication, support, and trip updates.",
+  socialNetworks: "Social Networks",
+  termsOfUse: "Terms of Use",
+  termsOfUseText:
+    "By using Travel Explorer, you agree to provide accurate booking information, respect service rules, and use AI suggestions as travel guidance rather than final legal or safety advice.",
   verification: "Verification",
   version: "Version",
   done: "Done",
