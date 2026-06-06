@@ -98,6 +98,13 @@ async function destroySession(token) {
   await sessions.deleteOne({ token });
 }
 
+async function deleteUserById(userId) {
+  const { sessions, users } = await getCollections();
+
+  await sessions.deleteMany({ userId });
+  await users.deleteOne({ id: userId });
+}
+
 async function registerUser({ email, name, password }) {
   const { users } = await getCollections();
   const existingUser = await findUserByEmail(email);
@@ -196,6 +203,30 @@ async function updateUser(userId, payload) {
     emailVerificationOtp,
     user: await getUserById(userId),
   };
+}
+
+async function restoreUserEmail(userId, previousUser) {
+  const { users } = await getCollections();
+  const $set = {
+    email: previousUser.email,
+    emailLower: previousUser.emailLower ?? normalizeText(previousUser.email),
+    emailVerifiedAt: previousUser.emailVerifiedAt ?? null,
+    isEmailVerified: Boolean(previousUser.isEmailVerified),
+  };
+  const update = {
+    $set,
+  };
+
+  if (previousUser.emailVerificationOtp) {
+    $set.emailVerificationOtp = previousUser.emailVerificationOtp;
+  } else {
+    update.$unset = {
+      emailVerificationOtp: "",
+    };
+  }
+
+  await users.updateOne({ id: userId }, update);
+  return getUserById(userId);
 }
 
 async function listPlaces(filters = {}) {
@@ -515,6 +546,7 @@ module.exports = {
   clearNotifications,
   createBooking,
   createSession,
+  deleteUserById,
   destroySession,
   findUserByEmail,
   getAppContent,
@@ -530,6 +562,7 @@ module.exports = {
   listTripPackages,
   registerUser,
   removeFavorite,
+  restoreUserEmail,
   sanitizeUser,
   setEmailVerificationOtp,
   setResetOtp,

@@ -34,9 +34,17 @@ router.patch("/me", async (req, res, next) => {
         to: result.user.email,
       });
 
+      if (!emailResult.sent) {
+        await store.restoreUserEmail(req.user.id, req.user);
+        return res.status(502).json({
+          error: "Bad Gateway",
+          message: "Unable to send OTP email. Please check backend mail settings.",
+          reason: emailResult.reason,
+        });
+      }
+
       emailVerification = {
-        otpSent: emailResult.sent,
-        reason: emailResult.reason,
+        otpSent: true,
       };
     }
 

@@ -28,12 +28,23 @@ router.post("/sign-up", async (req, res, next) => {
   try {
     requireFields(req.body, ["email", "name", "password"]);
 
+    const email = String(req.body.email).trim().toLowerCase();
+    const name = String(req.body.name).trim();
     const user = await store.registerUser({
-      email: req.body.email,
-      name: req.body.name,
+      email,
+      name,
       password: req.body.password,
     });
     const otp = await store.setEmailVerificationOtp(user.id);
+
+    if (!otp) {
+      await store.deleteUserById(user.id);
+      return res.status(500).json({
+        error: "Error",
+        message: "Unable to create OTP for this account.",
+      });
+    }
+
     const emailResult = await sendOtpEmail({
       name: user.name,
       otp,
@@ -41,11 +52,19 @@ router.post("/sign-up", async (req, res, next) => {
       to: user.email,
     });
 
+    if (!emailResult.sent) {
+      await store.deleteUserById(user.id);
+      return res.status(502).json({
+        error: "Bad Gateway",
+        message: "Unable to send OTP email. Please check backend mail settings.",
+        reason: emailResult.reason,
+      });
+    }
+
     res.status(201).json({
       data: await buildAuthResponse(user),
       emailVerification: {
-        otpSent: emailResult.sent,
-        reason: emailResult.reason,
+        otpSent: true,
       },
       message: "Account created. Please verify your email.",
     });
@@ -58,7 +77,9 @@ router.post("/sign-in", async (req, res, next) => {
   try {
     requireFields(req.body, ["email", "password"]);
 
-    const user = await store.findUserByEmail(req.body.email);
+    const user = await store.findUserByEmail(
+      String(req.body.email).trim().toLowerCase(),
+    );
 
     if (!user || user.password !== req.body.password) {
       return res.status(401).json({
@@ -80,14 +101,15 @@ router.post("/forgot-password", async (req, res, next) => {
   try {
     requireFields(req.body, ["email"]);
 
-    const otp = await store.setResetOtp(req.body.email);
-    const user = await store.findUserByEmail(req.body.email);
+    const email = String(req.body.email).trim().toLowerCase();
+    const otp = await store.setResetOtp(email);
+    const user = await store.findUserByEmail(email);
     const emailResult = otp
       ? await sendOtpEmail({
           name: user?.name,
           otp,
           purpose: "password_reset",
-          to: req.body.email,
+          to: email,
         })
       : {
           sent: false,
@@ -95,7 +117,7 @@ router.post("/forgot-password", async (req, res, next) => {
 
     res.json({
       data: {
-        email: req.body.email,
+        email,
         sent: emailResult.sent,
       },
       message: "If the account exists, a reset code has been sent",
@@ -109,7 +131,10 @@ router.post("/verify-otp", async (req, res, next) => {
   try {
     requireFields(req.body, ["code", "email"]);
 
-    const result = await store.verifyOtp(req.body.email, req.body.code);
+    const result = await store.verifyOtp(
+      String(req.body.email).trim().toLowerCase(),
+      req.body.code,
+    );
 
     if (!result) {
       return res.status(400).json({

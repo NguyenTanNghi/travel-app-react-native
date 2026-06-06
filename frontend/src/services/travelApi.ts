@@ -20,6 +20,15 @@ type AuthPayload = {
   user: UserProfile;
 };
 
+type EmailVerificationPayload = {
+  otpSent: boolean;
+  reason?: string;
+};
+
+type EmailVerificationResponse<T> = ApiResponse<T> & {
+  emailVerification?: EmailVerificationPayload | null;
+};
+
 type FavoritePayload = {
   favoritePlaceIds: string[];
   isFavorite?: boolean;
@@ -50,6 +59,12 @@ function toQuery(params: Record<string, string | boolean | undefined>) {
 
   const queryString = query.toString();
   return queryString ? `?${queryString}` : "";
+}
+
+function ensureOtpEmailSent(emailVerification?: EmailVerificationPayload | null) {
+  if (emailVerification && !emailVerification.otpSent) {
+    throw new Error("Unable to send OTP email. Please check backend mail settings.");
+  }
 }
 
 export const travelApi = {
@@ -184,11 +199,15 @@ export const travelApi = {
   },
 
   async signUp(payload: { email: string; name: string; password: string }) {
-    const response = await apiRequest<ApiResponse<AuthPayload>>("/auth/sign-up", {
-      body: JSON.stringify(payload),
-      method: "POST",
-    });
+    const response = await apiRequest<EmailVerificationResponse<AuthPayload>>(
+      "/auth/sign-up",
+      {
+        body: JSON.stringify(payload),
+        method: "POST",
+      },
+    );
 
+    ensureOtpEmailSent(response.emailVerification);
     return response.data;
   },
 
@@ -204,11 +223,15 @@ export const travelApi = {
   },
 
   async updateProfile(payload: Partial<UserProfile>) {
-    const response = await apiRequest<ApiResponse<UserProfile>>("/users/me", {
-      body: JSON.stringify(payload),
-      method: "PATCH",
-    });
+    const response = await apiRequest<EmailVerificationResponse<UserProfile>>(
+      "/users/me",
+      {
+        body: JSON.stringify(payload),
+        method: "PATCH",
+      },
+    );
 
+    ensureOtpEmailSent(response.emailVerification);
     return response.data;
   },
 

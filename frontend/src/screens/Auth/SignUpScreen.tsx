@@ -11,6 +11,8 @@ import { useNavigation } from "@/src/navigation/NavigationContext";
 import { useAppContext } from "@/src/store/AppContext";
 import { radius, spacing } from "@/src/theme";
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function SignUpScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,13 +25,42 @@ export default function SignUpScreen() {
   const { navigate, replace } = useNavigation();
 
   const handleSignUp = () => {
+    const normalizedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
     setErrorMessage("");
+
+    if (!normalizedName) {
+      setErrorMessage(t("fullNameRequired"));
+      return;
+    }
+
+    if (!normalizedEmail) {
+      setErrorMessage(t("emailRequired"));
+      return;
+    }
+
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      setErrorMessage(t("invalidEmail"));
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage(t("passwordRequired"));
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrorMessage(t("passwordTooShort"));
+      return;
+    }
+
     setSubmitting(true);
 
-    void signUp({ email, name, password })
+    void signUp({ email: normalizedEmail, name: normalizedName, password })
       .then(() => {
         replace("Verification", {
-          email,
+          email: normalizedEmail,
           returnTo: "Home",
         });
       })
